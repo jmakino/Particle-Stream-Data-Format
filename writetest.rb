@@ -1,4 +1,4 @@
-require 'yaml'
+require "psdf.rb"
 class Particle
   attr_accessor :id, :x   
   def initialize
@@ -6,13 +6,7 @@ class Particle
     @t=0
     @x=[0,1,2]
   end
-  def taguri
-    return 'x-private:Particle'
-  end
 end
-obj=Particle.new
-p obj
-#print YAML.dump(obj), "\n"
 (0..10).each{|id|
   obj=Particle.new
   obj.id =id;
