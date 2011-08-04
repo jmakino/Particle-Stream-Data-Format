@@ -1,0 +1,242 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{subsubsection}
+
+\setlength{\textheight}{22cm}
+\setlength{\textwidth}{15cm}
+\setlength{\leftmargin}{-0.5 in}
+\setlength{\topmargin}{0.35in}
+\setlength{\topmargin}{0.1in}
+\setlength{\evensidemargin}{0. in}
+\setlength{\oddsidemargin}{0. in}
+
+\parindent 5 pt
+\parskip 5 pt
+
+
+    \setcounter{secnumdepth}{5} 
+\setcounter{tocdepth}{5}
+
+    \begin{document}
+\def\bx{{\bf x}}
+\def\bv{{\bf v}}
+\def\ba{{\bf a}}
+\def\badot{{\bf \dot{a}}}
+\def\batwodot{{\bf a}^{(2)}}
+\def\bathreedot{{\bf a}^{(3)}}
+\def\bj{{\bf j}}
+\def\dt{{\Delta t}}
+\def\comment#1{}
+\def\sub#1{_{\rm #1}}
+\def\sup#1{^{\rm #1}}
+\def\APJ{{\it Ap. J. }}
+\def\APJL{{\it Ap. J. Lett. }}
+
+
+\title{Data format for visualization/analysis of collisional $N$-body simulation
+{\large 
+Ver 0.0 --- Aug 4 2011
+}
+}
+\author{Kob2011 collaboration}
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\thispagestyle{empty}
+
+
+
+
+\section{Introduction}
+
+\begin{itemize}
+
+  \item need for common data format
+  \item need to be able to reproduce complete trajectory of particles
+    of interests
+  \item machine independence
+  \item performance
+  \item parallel processing
+\end{itemize}
+
+\section{Basic idea}
+
+We need to store the data sufficient to reconstruct the orbits of
+individual particles. Conseptually, what we need is a stream of
+phase-space information of particles, such as:
+\begin{verbatim}
+  particle_id, time, mass, x, y, z, vx, vy, vz, ...
+  particle_id, time, mass, x, y, z, vx, vy, vz, ...
+  particle_id, time, mass, x, y, z, vx, vy, vz, ...
+\end{verbatim}
+However, the data format must be flexible enough to be able to include
+more information such as
+\begin{itemize}
+  \item radius, and other info related to stellar evolution
+  \item merger history
+  \item whatever else you can think of
+\end{itemize}
+
+One way to construct such a flexible data format is to use
+self-describing data format, such as XML or YAML. For simplicity,
+we adopt YAML here.
+
+\subsection{Some basics of YAML}
+
+The following is a simple example of YAML data which can be directly
+converted to/from an Ruby object:
+
+\begin{verbatim}
+--- !ruby/object:Particle
+id: 0
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+v:
+  - -1
+  - -2
+  - -3
+m: 1.0
+\end{verbatim}
+
+If this text is in a file ``test.yaml'', one can read in it by
+
+\begin{verbatim}
+ class Particle
+ end
+ require 'yaml'
+ obj= YAML.load_file('test.yaml')
+\end{verbatim}
+
+The content of the object is now:
+\begin{verbatim}
+p obj
+-> #<Particle:0xb7d151c0 @v=[-1, -2, -3], @id=0,
+       @x=[0.1, 0.2, 0.3], @m=1.0>
+\end{verbatim}
+
+As one can see, in this way we created a object of class Particle,
+with index, position, velocity, and mass given in the text. In the
+above example, the line
+
+\begin{verbatim}
+--- !ruby/object:Particle
+\end{verbatim}
+indicates that the following text should generate a ruby object with
+name ``Particle''.
+
+\begin{verbatim}
+id: 0
+\end{verbatim}
+defines a member variable with name ``id'', and value 0 for this
+particular instance
+\begin{verbatim}
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+\end{verbatim}
+means the member valiable ``x'' is an array with three elements. The
+first ``-'' means this line is a data for an array.
+By default, numbers without ``.'' are regarded as integers, and with
+``.'' floating point. Note that indentation has meaning here and ``-''
+must be indented deeper than ``x'' and should be aligned.
+I guess I do not need to explain ``v'' and ``m''
+
+One thing I do not quite see yet (need to ask Nakamura-san?) is how to
+convert a file with multiple objects to multiple ruby objects, but
+there must be some way.
+
+\subsection{Particle Stream data format}
+With the  minimal description of YAML in the previous section, now
+we can define the generic data format (not yet for binaries, though):
+The data format is the stream of YAML reporesentation of particle
+object, like
+
+\begin{verbatim}
+--- !ruby/object:Particle
+id: 0
+t: 0
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+v:
+  - -1
+  - -2
+  - -3
+m: 1.0
+--- !ruby/object:Particle
+id: 1
+t: 0
+x:
+  - 0.2
+  - 0.3
+  - 0.4
+v:
+  - 0
+  - 0
+  - 0
+m: 1.0
+....
+\end{verbatim}
+We need to have some naming convension, so that defferent programs can
+understand at least the basic common part of data. So we have
+
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+name & description\\
+\hline
+id & index\\
+m & mass\\
+t & time\\
+dt & timestep\\
+x  & position, array with three elements\\
+v  & velocity, array with three elements\\
+p  & potential\\
+a  & acceleration, array with three elements\\
+j  & jerk, array with three elements\\
+s  & snap, array with three elements\\
+c  & crackle, array with three elements\\
+pop  & pop, array with three elements\\
+\hline
+\end{tabular}
+
+We call this format with basic naming convension PSDS (Particle Stream
+Data Format).
+
+We call a YAML document which corresponds to a single particle object
+as ``worldpoint'', since it is a point on the worldline associated
+with a particle. It is translated to an object of Particle class, to
+call it particle is a bit confusing.
+
+\section{Some remarks}
+
+\subsection{File format}
+
+PSDS does not define the on-memory data description. It does not
+define how the individual YAML documents are stored.
+
+There are variety of ways to store worldpoints in file(s). In one
+extreme, all worldpoints are stored in a single file, in the order
+defined by time sequence. In the opposite extreme, one woldpoint is
+stored in one file. We could think of anything in between, such as
+single file for one particle or single file for some period in time.
+
+In order to do some parallel I/O, using multiple files may be more
+natural. We do not yet specify any particular form of parallel access,
+though. 
+
+
+
+\end{center}
+
+
+
+
+    \end{document}
