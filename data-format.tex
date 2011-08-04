@@ -90,7 +90,7 @@ The following is a simple example of YAML data which can be directly
 converted to/from an Ruby object:
 
 \begin{verbatim}
---- !ruby/object:Particle
+--- !!Particle
 id: 0
 x:
   - 0.1
@@ -107,8 +107,14 @@ If this text is in a file ``test.yaml'', one can read in it by
 
 \begin{verbatim}
  class Particle
+  def taguri
+    return 'x-private:Particle'
+  end
  end
  require 'yaml'
+YAML.add_private_type('Particle') do |type, val|
+  YAML.object_maker(Particle, val)
+end
  obj= YAML.load_file('test.yaml')
 \end{verbatim}
 
@@ -124,7 +130,7 @@ with index, position, velocity, and mass given in the text. In the
 above example, the line
 
 \begin{verbatim}
---- !ruby/object:Particle
+--- !!Particle
 \end{verbatim}
 indicates that the following text should generate a ruby object with
 name ``Particle''.
@@ -144,21 +150,19 @@ means the member valiable ``x'' is an array with three elements. The
 first ``-'' means this line is a data for an array.
 By default, numbers without ``.'' are regarded as integers, and with
 ``.'' floating point. Note that indentation has meaning here and ``-''
-must be indented deeper than ``x'' and should be aligned.
+must be indented the same level or deeper than ``x'' and should be aligned.
 I guess I do not need to explain ``v'' and ``m''
 
-One thing I do not quite see yet (need to ask Nakamura-san?) is how to
-convert a file with multiple objects to multiple ruby objects, but
-there must be some way.
 
-\subsection{Particle Stream data format}
+
+\subsection{Particle Stream Data Format}
 With the  minimal description of YAML in the previous section, now
 we can define the generic data format (not yet for binaries, though):
 The data format is the stream of YAML reporesentation of particle
 object, like
 
 \begin{verbatim}
---- !ruby/object:Particle
+--- !!Particle
 id: 0
 t: 0
 x:
@@ -170,7 +174,7 @@ v:
   - -2
   - -3
 m: 1.0
---- !ruby/object:Particle
+--- !!Particle
 id: 1
 t: 0
 x:
@@ -206,8 +210,9 @@ c  & crackle, array with three elements\\
 pop  & pop, array with three elements\\
 \hline
 \end{tabular}
+\end{center}
 
-We call this format with basic naming convension PSDS (Particle Stream
+We call this format with basic naming convension PSDF (Particle Stream
 Data Format).
 
 We call a YAML document which corresponds to a single particle object
@@ -215,10 +220,10 @@ as ``worldpoint'', since it is a point on the worldline associated
 with a particle. It is translated to an object of Particle class, to
 call it particle is a bit confusing.
 
+
 \section{Some remarks}
 
 \subsection{File format}
-
 PSDS does not define the on-memory data description. It does not
 define how the individual YAML documents are stored.
 
@@ -232,11 +237,81 @@ In order to do some parallel I/O, using multiple files may be more
 natural. We do not yet specify any particular form of parallel access,
 though. 
 
+\section{Repository}
 
 
-\end{center}
+\begin{verbatim}
+   git@github.com:jmakino/Particle-Stream-Data-Format.git
+\end{verbatim}
+
+you can download it by:
+\begin{verbatim}
+  mkdir foo
+  cd foo
+  git clone git://github.com/jmakino/Particle-Stream-Data-Format.git
+\end{verbatim}
+
+To update:
+
+\begin{verbatim}
+  git pull
+\end{verbatim}
+  
+\section{Sample codes}
+Also in the github.
+
+psdf.rb:
+\begin{verbatim}
+require 'yaml'
+class Particle
+  def taguri
+    return 'x-private:Particle'
+  end
+end
+YAML.add_private_type('Particle') do |type, val|
+  YAML.object_maker(Particle, val)
+end
+\end{verbatim}
+
+This is current minimal ``library'', which defines particle class and
+``Particle'' tag.
 
 
+writetest.rb:
+\begin{verbatim}
+require "psdf.rb"
+class Particle
+  attr_accessor :id, :x   
+  def initialize
+    @id=0
+    @t=0
+    @x=[0,1,2]
+  end
+end
+(0..10).each{|id|
+  obj=Particle.new
+  obj.id =id;
+  obj.x[0]=id*0.1
+  print YAML.dump(obj)
+}
+\end{verbatim}
 
+This one generate 10 worldpoints.
 
-    \end{document}
+readtest.rb:
+\begin{verbatim}
+require "psdf.rb"
+a = []
+while s = gets("--- ")
+  print s
+  print "\n\nend of one gets\n\n"
+  print s, "\n"
+  obj = YAML.load(s) 
+  a.push obj if obj
+end
+p a
+\end{verbatim}
+
+This one reads in 10 particles and store everything in a single array.
+
+\end{document}
