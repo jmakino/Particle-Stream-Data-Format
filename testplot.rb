@@ -7,6 +7,14 @@ include Math
 require "psdf.rb"
 class Particle
   attr_reader :id, :x, :t
+  def extraporate(t, scale)
+    dt = t - @t
+    pred=[]
+    @x.each_index{|k|
+      pred[k]=  ((@a[k]*dt*0.5+@v[k])*dt+ x[k] )/scale
+    }
+    pred
+  end
 end
 
 
@@ -34,7 +42,8 @@ display = Proc.new {
       GL.Color($color)
       GL.Rotate($theta, 0.0, 0.0, 1.0)
       GL.Rotate($phi, 1.0, 0.0, 0.0)
-      GL.Translate($pa[j].x[0]/scale,$pa[j].x[1]/scale, $pa[j].x[2]/scale)
+#      GL.Translate($pa[j].x[0]/scale,$pa[j].x[1]/scale, $pa[j].x[2]/scale)
+      GL.Translate(*$pa[j].extraporate($time, scale))
       GLUT.SolidSphere($size/scale*$radius, 10, 6);
       GL.PopMatrix
     end
