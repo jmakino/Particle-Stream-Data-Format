@@ -362,7 +362,43 @@ skelton code, with minimal UI and other stuff. It takes an input file
 with name ``testin'', in which a sequence of psdf world points is
 stored (can come from shared-timestep or individual-timestep code).
 
+This program requires ruby-opengl library. To install this (if not
+already installed) try:
+\begin{verbatim}
+  sudo gem install opengl
+\end{verbatim}
+On my machine with CentOS 5.5, it failed with:
+\begin{verbatim}
+sudo gem install ruby-opengl
+Building native extensions.  This could take a while...
+ERROR:  Error installing ruby-opengl:
+        ERROR: Failed to build gem native extension.
+
+/usr/bin/ruby -rubygems /usr/lib/ruby/gems/1.8/gems/rake-0.8.7/bin/rake RUBYARCHDIR=/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/lib RUBYLIBDIR=/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/lib
+/usr/bin/ruby mkrf_conf.rb
+(in /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1)
+rake
+gcc  -fPIC -g -O2    -Wall -DRUBY_VERSION=187  -I/usr/include -I/usr/lib/ruby/1.8/x86_64-linux -I/usr/lib/ruby/site_ruby/1.8 -I. -c gl-enums.c
+(in /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/ext/gl)
+gl-enums.c:6  include :
+../common/common.h:45:21: error: GL/glut.h: 
+                                              rake aborted!
+Command failed with status (1): [gcc  -fPIC -g -O2    -Wall -DRUBY_VERSION=...]
+/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/ext/gl/Rakefile:29
+(See full trace by running task with --trace)
+rake aborted!
+Command failed with status (1): [rake...]
+
+(See full trace by running task with --trace)
 
 
+Gem files will remain installed in /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1 for inspection.
+Results logged to /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/gem_make.out
+\end{verbatim}
 
-\end{document}
+In this case, you need to install GLUT library, by
+\begin{verbatim}
+  sudo yum install freeglut   freeglut-devel
+\end{verbatim}
+
+    \end{document}
