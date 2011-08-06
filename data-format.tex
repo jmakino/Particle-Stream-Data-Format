@@ -106,16 +106,16 @@ m: 1.0
 If this text is in a file ``test.yaml'', one can read in it by
 
 \begin{verbatim}
- class Particle
+class Particle
   def taguri
     return 'x-private:Particle'
   end
- end
- require 'yaml'
+end
+require 'yaml'
 YAML.add_private_type('Particle') do |type, val|
   YAML.object_maker(Particle, val)
 end
- obj= YAML.load_file('test.yaml')
+obj= YAML.load_file('test.yaml')
 \end{verbatim}
 
 The content of the object is now:
@@ -125,7 +125,7 @@ p obj
        @x=[0.1, 0.2, 0.3], @m=1.0>
 \end{verbatim}
 
-As one can see, in this way we created a object of class Particle,
+As one can see, in this way we created an object of class Particle,
 with index, position, velocity, and mass given in the text. In the
 above example, the line
 
@@ -152,8 +152,6 @@ By default, numbers without ``.'' are regarded as integers, and with
 ``.'' floating point. Note that indentation has meaning here and ``-''
 must be indented the same level or deeper than ``x'' and should be aligned.
 I guess I do not need to explain ``v'' and ``m''
-
-
 
 \subsection{Particle Stream Data Format}
 With the  minimal description of YAML in the previous section, now
@@ -240,8 +238,6 @@ though.
 \section{To do}
 
 \begin{itemize}
-\item Add some actual example for blockstep code input/output
-\item Add simple OpenGL stuff
 \item Add binary treatment extension
 \end{itemize}  
 
@@ -271,6 +267,7 @@ To update:
 \section{Sample codes}
 Also in the github.
 
+\subsection{Base library}
 psdf.rb:
 \begin{verbatim}
 require 'yaml'
@@ -287,6 +284,7 @@ end
 This is current minimal ``library'', which defines particle class and
 ``Particle'' tag.
 
+\subsection{Simple program to generate a psdf file}
 
 writetest.rb:
 \begin{verbatim}
@@ -309,6 +307,8 @@ end
 
 This one generate 10 worldpoints.
 
+\subsection{Simple program to read a psdf file}
+
 readtest.rb:
 \begin{verbatim}
 require "psdf.rb"
@@ -324,5 +324,45 @@ p a
 \end{verbatim}
 
 This one reads in 10 particles and store everything in a single array.
+
+\subsection{An ACS Body method to write a psdf worldpoint}
+
+acs\_psdf.rb:
+\begin{verbatim}
+require "psdf.rb"
+class Particle
+  attr_accessor :id, :x, :v, :a, :p, :j, :m, :t, :dt
+end
+
+class Body
+  def to_psdf
+    obj=Particle.new
+    obj.id = @body_id
+    obj.t  = @time
+    obj.x = Array[*@pos]
+    obj.v = Array[*@vel]
+    obj.a = Array[*@acc]
+    obj.j = Array[*@jerk]
+    obj
+  end
+  def psdf_output
+    print YAML.dump(self.to_psdf)
+  end
+end
+\end{verbatim}
+
+In the ACS Body class, position, velocity and other vector data are of
+class {\tt Vector}, not {\tt Array}. So you need to convert them to
+{\tt Array}.
+
+\subsection{An OpenGL animation program}
+
+The file testplot.rb gives a simple example. It it intended to be a
+skelton code, with minimal UI and other stuff. It takes an input file
+with name ``testin'', in which a sequence of psdf world points is
+stored (can come from shared-timestep or individual-timestep code).
+
+
+
 
 \end{document}

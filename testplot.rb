@@ -28,26 +28,32 @@ display = Proc.new {
   GL.PushMatrix
   print "time= #{$time}, n=#{$n}, frame=#{$frame}\n"
   for j in 0..$n-1
-    GL.PushMatrix
-#    GL.Material(GL::FRONT, GL::AMBIENT, $Material[j]);
-    GL.Color($color)
-    GL.Rotate($theta, 0.0, 0.0, 1.0)
-    GL.Rotate($phi, 1.0, 0.0, 0.0)
-    GL.Translate($pa[j].x[0]/scale,$pa[j].x[1]/scale, $pa[j].x[2]/scale)
-    GLUT.SolidSphere($size/scale*$radius, 10, 6);
-    GL.PopMatrix
+    if $pa[j]
+      GL.PushMatrix
+      #    GL.Material(GL::FRONT, GL::AMBIENT, $Material[j]);
+      GL.Color($color)
+      GL.Rotate($theta, 0.0, 0.0, 1.0)
+      GL.Rotate($phi, 1.0, 0.0, 0.0)
+      GL.Translate($pa[j].x[0]/scale,$pa[j].x[1]/scale, $pa[j].x[2]/scale)
+      GLUT.SolidSphere($size/scale*$radius, 10, 6);
+      GL.PopMatrix
+    end
   end
   GL.PopMatrix
   GLUT.SwapBuffers();
-  $frame += $inc
-  x= $a[$frame]
-  $pa[x.id]=x
-  $time = x.t
-  if $frame >= $a.size 
-    $frame=0
-  elsif $frame <= 0
-    $frame = $a.size - 1
-  end
+  incabs = $inc > 0 ? $inc:-$inc
+  incsign = $inc > 0 ? 1:-1
+  incabs.times{
+    $frame += incsign
+    if $frame >= $a.size 
+      $frame=0
+    elsif $frame <= 0
+      $frame = $a.size - 1
+    end
+    x= $a[$frame]
+    $pa[x.id]=x
+    $time = x.t
+  }
 }
 
 def init
@@ -87,18 +93,18 @@ keyboard = Proc.new {|key, x, y|
   case key
   when ?h,?H
       $inc =0
-#   when ?a,?A
-#     if $inc >= 0
-#       $inc += 1
-#     else
-#       $inc -= 1
-#     end
-#   when ?d,?D
-#     if $inc > 0
-#       $inc -= 1
-#     else
-#       $inc += 1
-#     end
+   when ?a,?A
+     if $inc >= 0
+       $inc += 1
+     else
+       $inc -= 1
+     end
+   when ?d,?D
+     if $inc > 0
+       $inc -= 1
+     else
+       $inc += 1
+     end
   when ?s
     $scale *= 1.2
   when ?S
@@ -172,7 +178,7 @@ while  s = f.gets("--- " )
 end
 $pa=[]
 $a.reverse_each{|x|  $pa[x.id]=x }
-$pa.compact!
+#$pa.compact!
 
 $time=0
 $n = $pa.length
