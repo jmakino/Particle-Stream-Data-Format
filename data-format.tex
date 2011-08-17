@@ -321,15 +321,141 @@ PSDF does not define the on-memory data description. It does not
 define how the individual YAML documents are stored.
 
 There are variety of ways to store worldpoints in file(s). In one
-extreme, all worldpoints are stored in a single file, in the order
-defined by time sequence. In the opposite extreme, one worldpoint is
+extreme, all worldpoints are stored in a single big file, in the order
+defined by the time sequence. In the opposite extreme, one worldpoint is
 stored in one file. We could think of anything in between, such as
 single file for one particle or single file for some period in time.
 
 In order to do some parallel I/O, using multiple files may be more
 natural. We do not yet specify any particular form of parallel access,
-though. 
+though. We might provide some examples, though.
 
+\subsection{Interpolation etc}
+
+In the example given in the main text, a binary is given by:
+
+
+\begin{verbatim}
+--- !!Particle
+id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+v:
+  - -1
+  - -2
+  - -3
+m: 2.0
+\end{verbatim}
+
+It looks just as a normal particle. If one wants to say more, it is
+possible to include some more info, using user-defined extension
+(X\_something).
+
+Components need to have the index of their parent, and we assume that
+the coordinates of components (and time derivatives) are relative to
+that of their parent.
+
+So the worldpoint data of two components look like:
+
+\begin{verbatim}
+--- !!Particle
+id: 0
+parent_id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.0
+  - 0.0
+v:
+  - -1
+  - 0
+  - 0
+m: 1.0
+\end{verbatim}
+
+and
+
+\begin{verbatim}
+--- !!Particle
+id: 1
+parent_id: 0+1
+t: 0
+x:
+  - -0.1
+  - 0.0
+  - 0.0
+v:
+  - 1
+  - 0
+  - 0
+m: 1.0\begin{verbatim}
+--- !!Particle
+id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+v:
+  - -1
+  - -2
+  - -3
+m: 2.0
+\end{verbatim}
+
+It looks just as a normal particle. If one wants to say more, it is
+possible to include some more info, using user-defined extension
+(X\_something).
+
+Components need to have the index of their parent, and we assume that
+the coordinates of components (and time derivatives) are relative to
+that of their parent.
+
+So the worldpoint data of two components look like:
+
+\begin{verbatim}
+--- !!Particle
+id: 0
+parent_id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.0
+  - 0.0
+v:
+  - -1
+  - 0
+  - 0
+m: 1.0
+\end{verbatim}
+
+and
+
+\begin{verbatim}
+--- !!Particle
+id: 1
+parent_id: 0+1
+t: 0
+x:
+  - -0.1
+  - 0.0
+  - 0.0
+v:
+  - 1
+  - 0
+  - 0
+m: 1.0
+\end{verbatim}
+
+
+When you do the time integration, for a while only the internal motion
+is updated, resulting in sequence of data for particles 0 and
+1. Particle 0+1 will be updated only some time later. 
+If one wants the absolute position of particle 0 at any
+given time between 0 and the next output time of 0+1, one 
 \section{To do}
 
 \begin{itemize}
