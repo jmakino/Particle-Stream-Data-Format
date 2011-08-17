@@ -62,6 +62,13 @@ Ver 0.0 --- Aug 4 2011
   \item parallel processing
 \end{itemize}
 
+\section{Changes}
+\subsection{Aug 17, 2011}
+
+Data format for binary components (or any hierarchical object)
+defined.
+
+
 \section{Basic idea}
 
 We need to store the data sufficient to reconstruct the orbits of
@@ -153,7 +160,11 @@ By default, numbers without ``.'' are regarded as integers, and with
 must be indented the same level or deeper than ``x'' and should be aligned.
 I guess I do not need to explain ``v'' and ``m''
 
-\subsection{Particle Stream Data Format}
+\section{Particle Stream Data Format}
+
+
+\subsection{normal particles}
+
 With the  minimal description of YAML in the previous section, now
 we can define the generic data format (not yet for binaries, though):
 The data format is the stream of YAML reporesentation of particle
@@ -194,7 +205,8 @@ understand at least the basic common part of data. So we have
 \hline
 name & description\\
 \hline
-id & index\\
+id & index (can be arbitrary text)\\
+parent\_id & index  of parent\\
 m & mass\\
 t & time\\
 dt & timestep\\
@@ -206,17 +218,100 @@ j  & jerk, array with three elements\\
 s  & snap, array with three elements\\
 c  & crackle, array with three elements\\
 pop  & pop, array with three elements\\
+X\_something & User-defined extension\\
 \hline
 \end{tabular}
 \end{center}
 
 We call this format with basic naming convension PSDF (Particle Stream
-Data Format).
+Data Format). Here, ``X-something'' implies that one can use any name
+starting with ``X-'' to record whatever thing one likes. If different
+users use the same name, like ``X\_predicted\_position'' for different
+things, that might cause confusion. So it might be better to have your
+own tag, like ``NBODY6'' or ``Starlab'' as the second-level tag, so
+that you have ``X\_Starlab\_predicted\_position''.
 
 We call a YAML document which corresponds to a single particle object
 as ``worldpoint'', since it is a point on the worldline associated
 with a particle. It is translated to an object of Particle class, to
 call it particle is a bit confusing.
+
+\subsection{hierarchical subsystems}
+
+In many dynamics code, it is necessary to apply some special treatment
+for binary stars or other compact subsystems, and it is desirable to
+be able to  retain such data structure in the I/O format. We express
+such data structure by ``upward'' pointers. A binary, with ``name''
+``0+1'', composed of two particles ``0'' and ``1'' appears in the data
+file just as a normal particle:
+
+
+\begin{verbatim}
+--- !!Particle
+id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.2
+  - 0.3
+v:
+  - -1
+  - -2
+  - -3
+m: 2.0
+\end{verbatim}
+
+It looks just as a normal particle. If one wants to say more, it is
+possible to include some more info, using user-defined extension
+(X\_something).
+
+Components need to have the index of their parent, and we assume that
+the coordinates of components (and time derivatives) are relative to
+that of their parent.
+
+So the worldpoint data of two components look like:
+
+\begin{verbatim}
+--- !!Particle
+id: 0
+parent\_id: 0+1
+t: 0
+x:
+  - 0.1
+  - 0.0
+  - 0.0
+v:
+  - -1
+  - 0
+  - 0
+m: 1.0
+\end{verbatim}
+
+and
+
+\begin{verbatim}
+--- !!Particle
+id: 1
+parent\_id: 0+1
+t: 0
+x:
+  - -0.1
+  - 0.0
+  - 0.0
+v:
+  - 1
+  - 0
+  - 0
+m: 1.0
+\end{verbatim}
+
+
+Note that there is no need to explicitly express formation and
+distruction of the  ``0+1'' particle. It can just appear in the file
+when it is constructed, and from then on particles 0 and 1 will have
+``parent\_id'' in the output data and that means their coordinates are
+relative. When the composite particle disappear, the parent\_id tag
+just disappear from the output fields of particles 0 and 1.
 
 
 \section{Some remarks}
@@ -238,7 +333,7 @@ though.
 \section{To do}
 
 \begin{itemize}
-\item Add binary treatment extension
+\item Add more examples
 \end{itemize}  
 
 
