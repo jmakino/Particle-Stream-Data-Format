@@ -35,7 +35,8 @@
 
 \title{Data format for visualization/analysis of collisional $N$-body simulation
 {\large 
-Ver 0.0 --- Aug 4 2011
+Ver 0.0 --- Aug 4 2011\\
+Ver 0.1 --- Aug 17 2011\\
 }
 }
 \author{Kob2011 collaboration}
@@ -450,12 +451,17 @@ v:
 m: 1.0
 \end{verbatim}
 
-
 When you do the time integration, for a while only the internal motion
 is updated, resulting in sequence of data for particles 0 and
 1. Particle 0+1 will be updated only some time later. 
 If one wants the absolute position of particle 0 at any
-given time between 0 and the next output time of 0+1, one 
+given time between 0 and the next output time of 0+1, one need to
+estimate the position of 0+1 in some way. If it has velocity, one can
+do linear prediction using one wp, or third-order Hermite
+interpolation using both the time 0 and the next time. Interpolation
+of even higher orders can be done if the wp has acceleration or higher
+order terms.
+
 \section{To do}
 
 \begin{itemize}
