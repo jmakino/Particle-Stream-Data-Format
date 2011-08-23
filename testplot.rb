@@ -9,6 +9,7 @@ require "psdf.rb"
 class Particle
   attr_reader :id, :x, :t
   def extraporate(t, scale)
+#    p self
     dt = t - @t
     pred=[]
     @x.each_index{|k|
@@ -22,6 +23,14 @@ end
 $diffuseMaterial = [0.5,0.5,0.5,1.0];
 $Material = [[0.1,0.1,0.1,1.0],[0.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]]
 $color = [0.0,1.0,1.0]
+$colors = [[1.0,0.0,0.0],
+           [0.0,1.0,0.0],
+           [0.0,0.0,1.0],
+           [0.0,1.0,1.0],
+           [1.0,0.0,1.0],
+           [1.0,1.0,0.0],
+           [1.0,1.0,1.0]]
+
 $frame = 0
 $inc = 1
 $size=0.004
@@ -31,16 +40,22 @@ $theta= 0
 $phi = 0
 $n=0
 $location = 0
+$dx = 0
+$dy = 0
+$dd = 0.01
 display = Proc.new {
   scale = $scale
+  GL.Enable(GL::COLOR_MATERIAL);
   GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
+  GL.LoadIdentity();
+  GLU.LookAt(0.0, 0.0, 5.0, $dx, $dy, 0.0, 0.0, 1.0, 0.0)
   GL.PushMatrix
   print "time= #{$time}, n=#{$n}, frame=#{$frame}\n"
   for j in 0..$n-1
     if $pa[j]
       GL.PushMatrix
       #    GL.Material(GL::FRONT, GL::AMBIENT, $Material[j]);
-      GL.Color($color)
+      GL.Color($colors[j% $colors.length])
       GL.Rotate($theta, 0.0, 0.0, 1.0)
       GL.Rotate($phi, 1.0, 0.0, 0.0)
 #      GL.Translate($pa[j].x[0]/scale,$pa[j].x[1]/scale, $pa[j].x[2]/scale)
@@ -50,6 +65,9 @@ display = Proc.new {
     end
   end
   GL.PopMatrix
+
+
+
   GLUT.SwapBuffers();
   incabs = $inc > 0 ? $inc:-$inc
   incsign = $inc > 0 ? 1:-1
@@ -85,6 +103,7 @@ def init
   GL.MatrixMode(GL::PROJECTION);
   GLU.Perspective(40.0, 1.0, 1.0,  10.0);
   GL.MatrixMode(GL::MODELVIEW);
+  GL.LoadIdentity();
   GLU.LookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
   
 end
@@ -99,10 +118,28 @@ def showstep(direction)
   $inc = -$inc if direction < 0
 end
 
+def show_help
+print <<END
+Keyboard commands
+  H, h: stop animation and show this help
+  A, a: speed up
+  D, d: speed down
+  S, s: scale up(S) or down
+  R, r: increase(R) the size of points or decrease
+  X, x: rotate in some direction
+  Y, y: rotate in some other direction
+  U, u: move in some direction
+  N, N: move in some other direction
+  T, t: speed up or down the movement by U/N
+This is help for testplot.rb
+END
+end
+
 keyboard = Proc.new {|key, x, y|
   case key
   when ?h,?H
       $inc =0
+      show_help
    when ?a,?A
      if $inc >= 0
        $inc += 1
@@ -131,6 +168,18 @@ keyboard = Proc.new {|key, x, y|
     $theta += 3
   when ?Y
     $theta -= 3
+  when ?U
+     $dx += $dd
+  when ?u
+     $dx -= $dd
+  when ?N
+     $dy += $dd
+  when ?n
+     $dy -= $dd
+  when ?T
+     $dd *= 1.3
+  when ?t
+     $dd /= 1.3
   when ?>,?.
     showstep(1)
   when ?<,?,
@@ -183,9 +232,15 @@ $reDisplay = Proc.new {
 f = open("testin","r")
 $a=[]
 while  s = f.gets("--- " )
-  obj = YAML.load(s) 
-  $a.push obj if obj
+  begin
+    obj = YAML.load(s) 
+    $a.push obj if obj
+  rescue
+    print "end of file reached\n"
+  end
 end
+$a.pop
+
 $pa=[]
 $a.reverse_each{|x|  $pa[x.id]=x }
 #$pa.compact!
