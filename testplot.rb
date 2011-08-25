@@ -228,8 +228,15 @@ $reDisplay = Proc.new {
    GLUT.PostRedisplay();
 }
 
+if ARGV[0]
+  fname =ARGV[0]
+else
+  STDERR.print "Enter the name of the input file:"
+  fname = gets.chomp
+end
+STDERR.print "Input file: #{fname}\n"
 
-f = open("testin","r")
+f = open(fname,"r")
 $a=[]
 while  s = f.gets("--- " )
   begin
