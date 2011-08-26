@@ -1,3 +1,15 @@
 README for Particle Stream Data Format
 
+
 See data-format.pdf for more description.
+
+acs_psdf.rb: Extension of ACS Body function to perform PSDF output
+             (No input routine made so far)
+data-format.pdf: Current document
+data-format.tex: Current document source
+plot.rb:         Right now not working
+psdf.rb:         header file to define the basic class for PSDF
+readtest.rb      sample ruby code to read in PSDF
+testin           sample input file
+testplot.rb 	 sample visualization program
+writetest.rb 	 sample ruby code to write in PSDF
