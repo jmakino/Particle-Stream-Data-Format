@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+## Uses the PyYAML library.  Will read PSDF from stdin, write the
+## found particles' representations to stderr, and the corresponding
+## PSDF back to stdout.  
+
 import yaml
 
 class Particle(yaml.YAMLObject):
