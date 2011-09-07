@@ -1,3 +1,5 @@
+/* c-example.c: */
+
 #include <yaml.h>
 #include <assert.h>
 #include <string.h>
@@ -216,17 +218,16 @@ read_body(yaml_parser_t *parser) {
         }
         break;
 
-      case YAML_MAPPING_END_EVENT:
-        /* The mapping ended before we finished with the body! */
-        fprintf(stderr, "A body must include an id, time, mass, position, and velocity in its mapping.\n");
-        assert(0);
-        break;
-
       default:
         /* Drop the other node in the mapping. */
         drop_node(parser);
         break;
       }
+      
+    case YAML_MAPPING_END_EVENT:
+      /* Ended before we finished inputting body. */
+      fprintf(stderr, "Cannot construct body without all of (id, m, t, r, v) map elements!\n");
+      assert(0);
     }
 
     yaml_event_delete(&event);
