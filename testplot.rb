@@ -12,8 +12,8 @@ class Particle
 #    p self
     dt = t - @t
     pred=[]
-    @x.each_index{|k|
-      pred[k]=  ((@a[k]*dt*0.5+@v[k])*dt+ x[k] )/scale
+    @r.each_index{|k|
+      pred[k]=  (@v[k]*dt+ @r[k] )/scale
     }
     pred
   end
@@ -250,7 +250,7 @@ $a.pop
 
 $pa=[]
 $a.reverse_each{|x|  $pa[x.id]=x }
-#$pa.compact!
+# $pa.compact!
 
 $time=0
 $n = $pa.length

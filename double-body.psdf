@@ -22,3 +22,8 @@ v:
   - 1.0
   - 1.0
   - 1.0
+# Include an extra acceleration in this body.
+a: 
+  - 0.0
+  - 0.0
+  - 0.0

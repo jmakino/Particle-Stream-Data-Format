@@ -165,7 +165,6 @@ read_body(yaml_parser_t *parser) {
       drop_node(parser);
       break;
 
-
     case YAML_SCALAR_EVENT:
       /* We will have a scalar event for our names: "m", "r", "v", "id", etc. */
       assert(event.data.scalar.length > 0);
@@ -217,6 +216,12 @@ read_body(yaml_parser_t *parser) {
         }
         break;
 
+      case YAML_MAPPING_END_EVENT:
+        /* The mapping ended before we finished with the body! */
+        fprintf(stderr, "A body must include an id, time, mass, position, and velocity in its mapping.\n");
+        assert(0);
+        break;
+
       default:
         /* Drop the other node in the mapping. */
         drop_node(parser);
@@ -236,6 +241,18 @@ read_body(yaml_parser_t *parser) {
   return b;
 }
 
+/* Note that we may want to give more digits of precision than the
+   default in %g, depending on the purpose of the output. */
+static void 
+write_body(body_t *b) {
+  fprintf(stdout, "--- !!Particle\n");
+  fprintf(stdout, "id: %d\n", b->id);
+  fprintf(stdout, "m: %g\n", b->m);
+  fprintf(stdout, "t: %g\n", b->t);
+  fprintf(stdout, "r:\n  - %g\n  - %g\n  - %g\n", b->r[0], b->r[1], b->r[2]);
+  fprintf(stdout, "v:\n  - %g\n  - %g\n  - %g\n", b->v[0], b->v[1], b->v[2]);
+}
+
 int main() {
   yaml_parser_t parser;
   body_t *b;
@@ -247,6 +264,7 @@ int main() {
     b = read_body(&parser);
     fprintf(stderr, "Read body with id = %d, t = %g, m = %g, r = {%g, %g, %g}, v = {%g, %g, %g}.\n",
             b->id, b->t, b->m, b->r[0], b->r[1], b->r[2], b->v[0], b->v[1], b->v[2]);
+    write_body(b);
     free(b);
   } while(1);
 
