@@ -3,8 +3,8 @@ README for Particle Stream Data Format
 
 See data-format.pdf for more description.
 
-acs_psdf.rb: Extension of ACS Body function to perform PSDF output
-             (No input routine made so far)
+acs_psdf.rb:      Extension of ACS Body function to perform PSDF output
+                 (No input routine made so far)
 data-format.pdf: Current document
 data-format.tex: Current document source
 plot.rb:         Right now not working
