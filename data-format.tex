@@ -100,7 +100,7 @@ converted to/from an Ruby object:
 \begin{verbatim}
 --- !!Particle
 id: 0
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
@@ -130,7 +130,7 @@ The content of the object is now:
 \begin{verbatim}
 p obj
 -> #<Particle:0xb7d151c0 @v=[-1, -2, -3], @id=0,
-       @x=[0.1, 0.2, 0.3], @m=1.0>
+       @r=[0.1, 0.2, 0.3], @m=1.0>
 \end{verbatim}
 
 As one can see, in this way we created an object of class Particle,
@@ -149,12 +149,12 @@ id: 0
 defines a member variable with name ``id'', and value 0 for this
 particular instance
 \begin{verbatim}
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
 \end{verbatim}
-means the member variable ``x'' is an array with three elements. The
+means the member variable ``r'' is an array with three elements. The
 first ``-'' means this line is a data for an array.
 By default, numbers without ``.'' are regarded as integers, and with
 ``.'' floating point. Note that indentation has meaning here and ``-''
@@ -175,7 +175,7 @@ object, like
 --- !!Particle
 id: 0
 t: 0
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
@@ -187,7 +187,7 @@ m: 1.0
 --- !!Particle
 id: 1
 t: 0
-x:
+r:
   - 0.2
   - 0.3
   - 0.4
@@ -199,7 +199,8 @@ m: 1.0
 ....
 \end{verbatim}
 We need to have some naming convention, so that different programs can
-understand at least the basic common part of data. So we have
+understand at least the basic common part of data. We have ``reserved
+words''
 
 \begin{center}
 \begin{tabular}{|c|l|}
@@ -210,27 +211,36 @@ id & index (can be arbitrary text)\\
 parent\_id & index  of parent\\
 m & mass\\
 t & time\\
-dt & timestep\\
-x  & position, array with three elements\\
+r  & position, array with three elements\\
 v  & velocity, array with three elements\\
-p  & potential\\
-a  & acceleration, array with three elements\\
-j  & jerk, array with three elements\\
-s  & snap, array with three elements\\
-c  & crackle, array with three elements\\
+pot  & potential\\
+acc  & acceleration, array with three elements\\
+jerk  & jerk, array with three elements\\
+snap  & snap, array with three elements\\
+crackle  & crackle, array with three elements\\
 pop  & pop, array with three elements\\
-X\_something & User-defined extension\\
 \hline
 \end{tabular}
 \end{center}
 
+and ``words with suggested use''
+
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+name & description\\
+\hline
+parent\_id & index  of parent\\
+dt & timestep\\
+\hline
+\end{tabular}
+\end{center}
+
+
 We call this format with basic naming convention PSDF (Particle Stream
-Data Format). Here, ``X-something'' implies that one can use any name
-starting with ``X-'' to record whatever thing one likes. If different
-users use the same name, like ``X\_predicted\_position'' for different
-things, that might cause confusion. So it might be better to have your
-own tag, like ``NBODY6'' or ``Starlab'' as the second-level tag, so
-that you have ``X\_Starlab\_predicted\_position''.
+Data Format). If one wants to add his/her own data, one possibility is
+to use a name like ``NBODY6\_predicted\_position''. We do not enforce
+the use of keyword  ``X\_'', but are not against it.
 
 We call a YAML document which corresponds to a single particle object
 as ``worldpoint'', since it is a point on the worldline associated
@@ -251,7 +261,7 @@ file just as a normal particle:
 --- !!Particle
 id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
@@ -281,7 +291,7 @@ So the worldpoint data of two components look like:
 id: 0
 parent_id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.0
   - 0.0
@@ -299,7 +309,7 @@ and
 id: 1
 parent_id: 0+1
 t: 0
-x:
+r:
   - -0.1
   - 0.0
   - 0.0
@@ -344,7 +354,7 @@ In the example given in the main text, a binary is given by:
 --- !!Particle
 id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
@@ -370,7 +380,7 @@ So the worldpoint data of two components look like:
 id: 0
 parent_id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.0
   - 0.0
@@ -388,7 +398,7 @@ and
 id: 1
 parent_id: 0+1
 t: 0
-x:
+r:
   - -0.1
   - 0.0
   - 0.0
@@ -400,7 +410,7 @@ m: 1.0\begin{verbatim}
 --- !!Particle
 id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.2
   - 0.3
@@ -426,7 +436,7 @@ So the worldpoint data of two components look like:
 id: 0
 parent_id: 0+1
 t: 0
-x:
+r:
   - 0.1
   - 0.0
   - 0.0
@@ -444,7 +454,7 @@ and
 id: 1
 parent_id: 0+1
 t: 0
-x:
+r:
   - -0.1
   - 0.0
   - 0.0
@@ -457,14 +467,13 @@ m: 1.0
 
 When you do the time integration, for a while only the internal motion
 is updated, resulting in sequence of data for particles 0 and
-1. Particle 0+1 will be updated only some time later. 
-If one wants the absolute position of particle 0 at any
-given time between 0 and the next output time of 0+1, one need to
-estimate the position of 0+1 in some way. If it has velocity, one can
-do linear prediction using one wp, or third-order Hermite
-interpolation using both the time 0 and the next time. Interpolation
-of even higher orders can be done if the wp has acceleration or higher
-order terms.
+1. Particle 0+1 will be updated only some time later.  If one wants
+the absolute position of particle 0 at any given time between 0 and
+the next output time of 0+1, one need to estimate the position of 0+1
+in some way. If it has velocity, one can do linear prediction using
+one wp, or third-order Hermite interpolation using both the time 0 and
+the next time. Interpolation of even higher orders can be done if the
+wp has acceleration or higher order terms.
 
 \section{To do}
 
@@ -521,11 +530,11 @@ writetest.rb:
 \begin{verbatim}
 require "psdf.rb"
 class Particle
-  attr_accessor :id, :x   
+  attr_accessor :id, :r   
   def initialize
     @id=0
     @t=0
-    @x=[0,1,2]
+    @r=[0,1,2]
   end
 end
 (0..10).each{|id|
@@ -562,7 +571,7 @@ acs\_psdf.rb:
 \begin{verbatim}
 require "psdf.rb"
 class Particle
-  attr_accessor :id, :x, :v, :a, :p, :j, :m, :t, :dt
+  attr_accessor :id, :r, :v, :a, :p, :j, :m, :t, :dt
 end
 
 class Body
@@ -570,7 +579,7 @@ class Body
     obj=Particle.new
     obj.id = @body_id
     obj.t  = @time
-    obj.x = Array[*@pos]
+    obj.r = Array[*@pos]
     obj.v = Array[*@vel]
     obj.a = Array[*@acc]
     obj.j = Array[*@jerk]
