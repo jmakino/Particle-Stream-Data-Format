@@ -1,4 +1,22 @@
-/* c-example.c: */
+/* c-example.c: Example of PSDF parsing and printing for a very basic
+   body structure in C. 
+
+   Author: Will M. Farr <w-farr@northwestern.edu>
+
+   To compile on my machine:
+
+   gcc -o c-example c-example.c -I/path/to/yaml.h/include -L/path/to/libyaml -lyaml
+
+   The program reads a PSDF stream from stdin, reports on the bodies
+   it has read to stderr, and writes the corresponding PSDF stream on
+   stdout.  Note that elements of the particle mapping that do not
+   correspond to the id, t, m, r, v, tags that are used are ignored.
+   The program will quit with an error if the input stream contains
+   bodies that do not contain at least one each of the id, t, m, r, v
+   tags.  Generalization to your preferred body structure should be
+   easy.
+
+ */
 
 #include <yaml.h>
 #include <assert.h>
@@ -223,11 +241,13 @@ read_body(yaml_parser_t *parser) {
         drop_node(parser);
         break;
       }
+      break;
       
     case YAML_MAPPING_END_EVENT:
       /* Ended before we finished inputting body. */
       fprintf(stderr, "Cannot construct body without all of (id, m, t, r, v) map elements!\n");
       assert(0);
+      break;
     }
 
     yaml_event_delete(&event);
