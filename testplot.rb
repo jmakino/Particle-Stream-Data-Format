@@ -7,13 +7,13 @@ include Math
 
 require "psdf.rb"
 class Particle
-  attr_reader :id, :x, :t
+  attr_reader :id, :r, :t
   def extraporate(t, scale)
 #    p self
     dt = t - @t
     pred=[]
-    @x.each_index{|k|
-      pred[k]=  ((@a[k]*dt*0.5+@v[k])*dt+ x[k] )/scale
+    @r.each_index{|k|
+      pred[k]=  ((@a[k]*dt*0.5+@v[k])*dt+ r[k] )/scale
     }
     pred
   end
