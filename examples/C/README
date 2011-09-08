@@ -1,0 +1,9 @@
+This is an example of parsing the PSDF data format in C.  It requires
+libyaml.  Edit the Makefile to point to your libyaml installation,
+then use 'make' to build the input_output program.  
+
+The input_output program acts as a PSDF translator: it reads a PSDF
+stream on stdin, constructs the corresponding body objects, and writes
+their PSDF on stdout.  You may find the functions in psdf-body.c
+useful in constructing a PSDF reader for your own, custom, body
+objects.

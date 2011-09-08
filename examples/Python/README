@@ -1,0 +1,31 @@
+This directory contains various Particle Stream Data Format libraries
+and utilities written in Python.
+
+Most of the programs will require the PyYAML library to function
+properly.  To build the library and scripts, issue the command 
+
+python setup.py build
+
+To build and install the scripts (or install if already built), issue
+the comamnd
+
+python setup.py install
+
+You can find several examples of PSDF data files for experimentation
+in the share/psdf/ directory.
+
+The library code is organized in a module called psdf.  The scripts
+are in the bin subdirectory:
+
+energy.py: Reads a PSDF system from stdin, and prints the total,
+kinetic, and potential energy of that system on stdout.
+
+input_output.py: A simple example that reads a system or set of
+worldlines on stdin in PSDF format, constructs the corresponding
+particle objects, and dumps them on stdout in PSDF format.
+
+plummer_model.py: Produces a plummer model in PSDF format on stdout.
+
+system_to_standard_units.py: Reads a system in PSDF format on stdin,
+and prints the corresponding system in the center of mass frame and
+standard units (G = MTot = 1, Etot = -1/4) to stdout.
