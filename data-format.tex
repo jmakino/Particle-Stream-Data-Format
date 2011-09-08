@@ -1,69 +1,9 @@
-% Template article for preprint document class `elsart'
-% with harvard style bibliographic references
-% SP 2006/04/26
+\documentclass[5p,authoryear]{elsarticle}
 
-%\documentclass{elsart}
-\documentclass{elsart5p}
-
-% Use the option doublespacing or reviewcopy to obtain double line spacing
-% \documentclass[doublespacing]{elsart}
-
-% the natbib package allows both number and author-year (Harvard)
-% style referencing;
-\usepackage{natbib}
-
-% if you use PostScript figures in your article
-% use the graphics package for simple commands
-% \usepackage{graphics}
-% or use the graphicx package for more complicated commands
 \usepackage{graphicx}
-\usepackage{color}
-\usepackage{bm}
-% or use the epsfig package if you prefer to use the old commands
-% \usepackage{epsfig}
 
 % The amssymb package provides various useful mathematical symbols
 \usepackage{amssymb}
-\usepackage{listings}
-\lstloadlanguages{C}
-\lstset{%
- language={C},%
-% backgroundcolor={\color[gray]{.85}},%
- basicstyle={\scriptsize\tt},%
-identifierstyle={},%
-commentstyle={\itshape},%
-keywordstyle={\bfseries},%
-ndkeywordstyle={},%
-stringstyle={\ttfamily},
-% identifierstyle={\small},%
-%commentstyle={\small\itshape},%
-commentstyle={\scriptsize\tt},
-% keywordstyle={\small\bfseries},%
-% ndkeywordstyle={\small},%
-% stringstyle={\small\ttfamily},
- frame={single},%
- breaklines=false,%
- columns=[l]{fixed},%
- numbers=left,%
- tabsize=4,%
-% xrightmargin=0zw,%
-% xleftmargin=3zw,%
- xleftmargin=10pt,%
- numberstyle={\scriptsize},%
-% numberstyle={\small},%
- stepnumber=1,%
-% numbersep=1zw,%
-% lineskip=-0.5ex,%
- lineskip=0.15ex,%
-}
-\renewcommand{\lstlistingname}{\small List}
-
-
-% The lineno packages adds line numbers. Start line numbering with
-% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
-% for the whole article with \linenumbers.
-% \usepackage{lineno}
-
 
 \newcommand{\itbold}[1]{\textbf{\textit{#1}}}
 \newcommand{\pdif}[2]{\frac{\partial #1}{\partial #2}}
@@ -73,58 +13,32 @@ commentstyle={\scriptsize\tt},
 \newcommand{\divr}[1]{\nabla_{\bf r} \cdot \textbf{\textit{#1}}}
 \renewcommand{\div}[1]{\nabla \cdot #1}
 
-% \linenumbers
 \begin{document}
-
-\begin{frontmatter}
-
-% Title, authors and addresses
-
-% use the thanksref command within \title, \author or \address for footnotes;
-% use the corauthref command within \author for corresponding author footnotes;
-% use the ead command for the email address,
-% and the form \ead[url] for the home page:
-% \title{Title\thanksref{label1}}
-% \thanks[label1]{}
-% \author{Name\corauthref{cor1}\thanksref{label2}}
-% \ead{email address}
-% \ead[url]{home page}
-% \thanks[label2]{}
-% \corauth[cor1]{}
-% \address{Address\thanksref{label3}}
-% \thanks[label3]{}
 
 \title{PSDF: Particle Stream Data Format for N-Body Simulations}
 
-% use optional labels to link authors explicitly to addresses:
-% \author[label1,label2]{}
-% \address[label1]{}
-% \address[label2]{}
-
-\author[xx1]{Will Farr\corauthref{cor1}},
+\author[WMF]{Will Farr\corref{cor1}}
 \ead{w-farr@northwestern.edu}
-\author[xx2]{Jeff Ames},
-\author[Princeton]{Piet Hut},
-\author[UTokyoTech]{Junichiro Makino},
-\author[xx3]{Steve McMillan},
-\author[xx4]{Takayuki Muranushi},
-\author[xx5]{Koichi Nakamura},
-\author[xx6]{Keigo Nitadori}, \&
-\author[xx7]{Simon Portegies Zwart}
+\author[JA]{Jeff Ames}
+\author[PH]{Piet Hut}
+\author[JM]{Junichiro Makino}
+\author[SM]{Steve McMillan}
+\author[TM]{Takayuki Muranushi}
+\author[KN]{Koichi Nakamura}
+\author[KN2]{Keigo Nitadori}
+\author[SPZ]{Simon Portegies Zwart}
 
-\address[UTokyoTech]{Interactive Research Center of Science, Graduate
+\cortext[cor1]{Corresponding author}
+
+\address[WMF]{Northwestern University Center for Interdisciplinary
+  Research in Astrophysics, 2145 Sheridan Rd., Evanston IL 60208}
+
+\address[JM]{Interactive Research Center of Science, Graduate
   School of Science and Engineering Tokyo Institute of Technology,
   2--12--1 Ookayama, Meguro, Tokyo 152-8551, Japan}
-\corauth[cor1]{Corresponding author.}
-\address[Princeton]{Institute for Advanced Study, Princeton, NJ 08540,
-  USA}
-\address[xx1]{xxx xxx xxx}
-\address[xx2]{xxx xxx xxx}
-\address[xx3]{xxx xxx xxx}
-\address[xx4]{xxx xxx xxx}
-\address[xx5]{xxx xxx xxx}
-\address[xx6]{xxx xxx xxx}
-\address[xx7]{xxx xxx xxx}
+
+\address[PH]{Institute
+  for Advanced Study, Princeton, NJ 08540, USA}
 
 \begin{abstract}
   We present a data format for the output of general N-body simulations,
@@ -143,11 +57,10 @@ commentstyle={\scriptsize\tt},
 \begin{keyword}
 % keywords here, in the form: keyword \sep keyword
 Stellar dynamics \sep Method: $N$-body simulation
-
 % PACS codes here, in the form: \PACS code \sep code
 \end{keyword}
 
-\end{frontmatter}
+\maketitle
 
 \section{Introduction}
 
@@ -559,9 +472,7 @@ In this case, you need to install GLUT library, by
 
 \section*{Acknowledgment}
 
-\begin{thebibliography}{00}
-  \bibitem[Tanikawa et al.(2011)]{Tanikawa11} Tanikawa,~A., Hut,~P.,
-    \& Makino,~J. 2011, arXiv:astro-ph/1107.3866
-\end{thebibliography}
+\bibliographystyle{elsarticle-harv}
+\bibliography{data-format}
 
 \end{document}
