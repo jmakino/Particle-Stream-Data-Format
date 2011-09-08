@@ -1,37 +1,7 @@
-/* c-example.c: Example of PSDF parsing and printing for a very basic
-   body structure in C. 
+#include "psdf-body.h"
+#include<assert.h>
 
-   Author: Will M. Farr <w-farr@northwestern.edu>
-
-   To compile on my machine:
-
-   gcc -o c-example c-example.c -I/path/to/yaml.h/include -L/path/to/libyaml -lyaml
-
-   The program reads a PSDF stream from stdin, reports on the bodies
-   it has read to stderr, and writes the corresponding PSDF stream on
-   stdout.  Note that elements of the particle mapping that do not
-   correspond to the id, t, m, r, v, tags that are used are ignored.
-   The program will quit with an error if the input stream contains
-   bodies that do not contain at least one each of the id, t, m, r, v
-   tags.  Generalization to your preferred body structure should be
-   easy.
-
- */
-
-#include <yaml.h>
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-
-typedef struct {
-  int id;
-  double t;
-  double m;
-  double r[3];
-  double v[3];
-} body_t;
-
-static void
+void
 read_until(yaml_parser_t *parser, yaml_event_type_t type) {
   yaml_event_t event;
 
@@ -53,7 +23,7 @@ read_until(yaml_parser_t *parser, yaml_event_type_t type) {
   yaml_event_delete(&event);
 }
 
-static void
+void
 drop_node(yaml_parser_t *parser) {
   yaml_event_t event;
 
@@ -84,7 +54,7 @@ drop_node(yaml_parser_t *parser) {
   yaml_event_delete(&event);
 }
 
-static double
+double
 read_double(yaml_parser_t *parser) {
   yaml_event_t event;
   double val;
@@ -102,7 +72,7 @@ read_double(yaml_parser_t *parser) {
   }
 }
 
-static int
+int
 read_int(yaml_parser_t *parser) {
   yaml_event_t event;
   int val;
@@ -120,7 +90,7 @@ read_int(yaml_parser_t *parser) {
   }
 }
 
-static void
+void
 read_three_vector(yaml_parser_t *parser, double v[3]) {
   yaml_event_t event;
 
@@ -147,7 +117,7 @@ event_value_string_matches(yaml_event_t *event, const char *str, size_t n) {
 
 /* Reads and returns a single body from the YAML stream associated
    with the given parser. */
-static body_t *
+body_t *
 read_body(yaml_parser_t *parser) {
   yaml_event_t event;
   int read_id = 0;
@@ -264,30 +234,12 @@ read_body(yaml_parser_t *parser) {
 
 /* Note that we may want to give more digits of precision than the
    default in %g, depending on the purpose of the output. */
-static void 
-write_body(body_t *b) {
-  fprintf(stdout, "--- !Particle\n");
-  fprintf(stdout, "id: %d\n", b->id);
-  fprintf(stdout, "m: %g\n", b->m);
-  fprintf(stdout, "t: %g\n", b->t);
-  fprintf(stdout, "r:\n  - %g\n  - %g\n  - %g\n", b->r[0], b->r[1], b->r[2]);
-  fprintf(stdout, "v:\n  - %g\n  - %g\n  - %g\n", b->v[0], b->v[1], b->v[2]);
-}
-
-int main() {
-  yaml_parser_t parser;
-  body_t *b;
-
-  yaml_parser_initialize(&parser);
-  yaml_parser_set_input_file(&parser, stdin);
-
-  do {
-    b = read_body(&parser);
-    fprintf(stderr, "Read body with id = %d, t = %g, m = %g, r = {%g, %g, %g}, v = {%g, %g, %g}.\n",
-            b->id, b->t, b->m, b->r[0], b->r[1], b->r[2], b->v[0], b->v[1], b->v[2]);
-    write_body(b);
-    free(b);
-  } while(1);
-
-  return 0;
+void 
+write_body(FILE *file, body_t *b) {
+  fprintf(file, "--- !Particle\n");
+  fprintf(file, "id: %d\n", b->id);
+  fprintf(file, "m: %g\n", b->m);
+  fprintf(file, "t: %g\n", b->t);
+  fprintf(file, "r:\n  - %g\n  - %g\n  - %g\n", b->r[0], b->r[1], b->r[2]);
+  fprintf(file, "v:\n  - %g\n  - %g\n  - %g\n", b->v[0], b->v[1], b->v[2]);
 }
