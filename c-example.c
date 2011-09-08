@@ -266,7 +266,7 @@ read_body(yaml_parser_t *parser) {
    default in %g, depending on the purpose of the output. */
 static void 
 write_body(body_t *b) {
-  fprintf(stdout, "--- !!Particle\n");
+  fprintf(stdout, "--- !Particle\n");
   fprintf(stdout, "id: %d\n", b->id);
   fprintf(stdout, "m: %g\n", b->m);
   fprintf(stdout, "t: %g\n", b->t);

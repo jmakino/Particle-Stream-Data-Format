@@ -13,8 +13,7 @@ class Particle(yaml.YAMLObject):
     and dumping.
     """
 
-    # '!!Particle' is shorthand for the following global tag:
-    yaml_tag = u'tag:yaml.org,2002:Particle'
+    yaml_tag = u'!Particle'
 
     def __repr__(self):
         return '%s(id=%r, m=%r, t=%r, r=%r, v=%r)'%(self.__class__.__name__,self.id, self.m, self.t, self.r, self.v)
