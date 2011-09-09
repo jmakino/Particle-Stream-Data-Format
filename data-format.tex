@@ -154,7 +154,7 @@ The following is a simple example of a data in YAML format.
 
 
 \begin{verbatim}
---- !!Particle
+--- !Particle
 id: 0
 r:
   - 0.1
@@ -170,7 +170,7 @@ m: 1.0
 In the above example, the line
 
 \begin{verbatim}
---- !!Particle
+--- !Particle
 \end{verbatim}
 Is the header, which indicates that it describes the data of an object
 of type {\tt Particle}.
@@ -203,7 +203,7 @@ The data format is the stream of YAML representation of particle
 object, like
 
 \begin{verbatim}
---- !!Particle
+--- !Particle
 id: 0
 t: 0
 r:
@@ -215,7 +215,7 @@ v:
   - -2
   - -3
 m: 1.0
---- !!Particle
+--- !Particle
 id: 1
 t: 0
 r:
