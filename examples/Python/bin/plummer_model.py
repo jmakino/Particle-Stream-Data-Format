@@ -15,12 +15,6 @@ if __name__ == "__main__":
                       type="int")
     (options,args) = parser.parse_args()
 
-    particles = []
-    for i in range(options.n):
-        r = ics.random_plummer_position()
-        v = ics.random_plummer_velocity(r)
-        particles.append(Particle(i, 1.0, 0.0, r, v))
-
-    particles=coordinates.to_standard_units(coordinates.to_com_frame(particles))
+    particles=ics.plummer_system(options.n)
 
     yaml.dump_all(particles, stream=sys.stdout)

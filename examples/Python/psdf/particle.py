@@ -3,11 +3,7 @@ from vector import *
 import math
 
 class Particle(yaml.YAMLObject):
-    """A basic particle class.
-
-    Inherit from yaml.YAMLObject in order to get automatic creation
-    and dumping.
-    """
+    """A particle class suitable for use with a Hermite integrator."""
 
     yaml_tag = u'!Particle'
 
@@ -16,44 +12,48 @@ class Particle(yaml.YAMLObject):
         self.id = idd
         self.m = m
         self.t = t
-        self.r = r[:]
-        self.v = v[:]
+        self.r = Vector(r[:])
+        self.v = Vector(v[:])
 
         # Some attributes useful for N-Body integration
-        self.a = [0, 0, 0] # Acceleration
-        self.j = [0, 0, 0] # Jerk
+        self.a = Vector([0, 0, 0]) # Acceleration
+        self.j = Vector([0, 0, 0]) # Jerk
         
         self.tpred = t
-        self.rpred = self.r[:]
-        self.vpred = self.v[:]
+        self.rpred = Vector(self.r[:])
+        self.vpred = Vector(self.v[:])
         
         self.tnext = self.t
 
-    def __cmp__(self, p):
-        """We compare particles only by tnext (not position, velocity,
-        etc).  This is useful to maintain a heap of particles during
-        the integration of an N-body system."""
-        if self.tnext < p.tnext:
-            return -1
-        elif self.tnext == p.tnext:
-            return 0
-        else:
-            return 1
+    def __repr__(self):
+        return 'Particle(id=%r, m=%r, t=%r, r=%r, v=%r)'%(self.id, self.m, self.t, self.r, self.v)
 
-    def __hash__(self):
-        """Hash only on tnext, to match comparison function."""
-        return hash(self.tnext)
-    
+    def __str__(self):
+        return 'Particle(id=%s, m=%s, t=%s, r=%s, v=%s)'%(self.id, self.m, self.t, self.r, self.v)
+
+    def copy(self):
+        """Returns a deep copy."""
+        cop = Particle(self.id, self.m, self.t, self.r[:], self.v[:])
+
+        cop.a = Vector(self.a[:])
+        cop.j = Vector(self.j[:])
+
+        cop.tpred = self.tpred
+        cop.rpred = Vector(self.rpred[:])
+        cop.vpred = Vector(self.vpred[:])
+
+        cop.tnext = self.tnext
+
+        return cop
+
     def pred(self, t):
         """Predicts the position and velocity of the particle at the
         given time."""
         dt = t - self.t
 
-        rpred = [r + dt*(v + (dt/2.0)*(a + (dt/3.0)*j))
-                 for r,v,a,j in zip(self.r, self.v, self.a, self.j)]
+        rpred = self.r + dt*(self.v + (dt/2.0)*(self.a + (dt/3.0)*self.j))
 
-        vpred = [v + dt*(a + (dt/2.0)*j)
-                 for v,a,j in zip(self.v, self.a, self.j)]
+        vpred = self.v + dt*(self.a + (dt/2.0)*self.j)
 
         self.tpred = t
         self.rpred = rpred
@@ -63,12 +63,12 @@ class Particle(yaml.YAMLObject):
 
     def kinetic_energy(self):
         """Returns the kinetic energy of the particle."""
-        return 0.5*self.m*dot(self.v, self.v)
+        return 0.5*self.m*self.v*self.v
 
     def potential_energy(self, p):
         """Returns the potential energy between this body and the
         given body."""
-        d = distance(self.r, p.r)
+        d = (self.r - p.r).norm()
 
         return -self.m*p.m/d
 
@@ -78,19 +78,36 @@ class Particle(yaml.YAMLObject):
 
         pr,pv = p.pred(self.t)
 
-        r = [px - x for px,x in zip(pr, self.r)]
-        v = [pv - v for pv,v in zip(pv, self.v)]
+        r = pr - self.r
+        v = pv - self.v
 
-        rdv = dot(r,v)
+        rdv = r*v
 
-        r2 = dot(r,r)
+        r2 = r*r
         r3 = r2*math.sqrt(r2)
         r5 = r3*r2
 
-        acc = [p.m*self.m*r/r3 for r in r]
-        jerk = [p.m*self.m*(v/r3 - 3.0*r*rdv/r5) for v,r in zip(v,r)]
+        acc = p.m*r/r3
+        jerk = p.m*(v/r3 - 3.0*rdv*r/r5)
 
         return acc,jerk
+
+    def total_acc_and_jerk(self, ps):
+        """Returns the total acceleration and jerk on this object from
+        the list of bodies ps.  Uses the t,r,v of self for
+        computation."""
+
+        totalacc = Vector([0,0,0])
+        totaljerk = Vector([0,0,0])
+
+        # Compute accumulated acc and jerk.
+        for p in ps:
+            if not p == self:
+                acc,jerk = self.acc_and_jerk(p)
+                totalacc += acc
+                totaljerk += jerk
+
+        return totalacc,totaljerk        
 
     def set_collision_time_scale(self, ps, safety_factor):
         """Sets the next time for this body to be its current time
@@ -98,30 +115,33 @@ class Particle(yaml.YAMLObject):
         t2 = 1e1000
 
         for p in ps:
-            pr,pv = p.pred(self.t)
+            if p != self:
+                pr,pv = p.pred(self.t)
             
-            r = [px - x for px,x in zip(pr, self.r)]
-            v = [pv - v for pv,v in zip(pv, self.v)]
+                r = pr - self.r
+                v = pv - self.v
 
-            r2 = dot(r,r)
-            v2 = dot(v,v)
+                r2 = r*r
+                v2 = v*v
 
-            pt2 = r2/v2
-
-            t2 = min(t2, pt2)
+                pt2 = r2/v2
+                
+                t2 = min(t2, pt2)
 
         self.tnext = self.t + safety_factor*math.sqrt(t2)
 
-    def hermite_step(self, ps, safety_factor):
+    def hermite_step(self, ps, safety_factor, tstop):
         """Take one Hermite step in the system of bodies ps.  Safety
         factor is used to set the next time at the end of the step,
-        via set_collision_time_scale."""
-
-        totalacc = [0,0,0]
-        totaljerk = [0,0,0]
+        via set_collision_time_scale.  If the natural step would
+        advance beyond tstop, then the step will be shortened to
+        tstop."""
 
         oldr = self.r
         oldv = self.v
+
+        if self.tnext > tstop:
+            self.tnext = tstop
 
         dt = self.tnext - self.t
 
@@ -129,22 +149,33 @@ class Particle(yaml.YAMLObject):
         self.r, self.v = self.pred(self.tnext)
         self.t = self.tnext
 
-        # Compute accumulated acc and jerk.
-        for p in ps:
-            acc,jerk = self.acc_and_jerk(p, self.t)
-            totalacc = [ta + a for ta,a in zip(totalacc, acc)]
-            totaljerk = [tj + j for tj,j in zip(totaljerk, jerk)]
+        newacc,newjerk=self.total_acc_and_jerk(ps)
 
         # Update step: new, corrected velocity and position
-        self.v = [ov + (dt/2.0)*(ta+a + (dt/6.0)*(j - tj))
-                  for ov,ta,a,j,tj in zip(oldv,totalacc,self.acc,self.jerk,totaljerk)]
-        self.r = [r + (dt/2.0)*(ov + v + (dt/6.0)*(a - ta))
-                  for r,ov,v,a,ta in zip(self.r, oldv, self.v, self.acc, totalacc)]
+        self.v = oldv + (dt/2.0)*(newacc + self.a + (dt/6.0)*(self.j - newjerk))
+        self.r = oldr + (dt/2.0)*(oldv + self.v + (dt/6.0)*(self.a - newacc))
 
         # Store the computed acc and jerk at the new time
-        self.acc = totalacc
-        self.jerk = totaljerk
-        self.t = tnext
+        self.a = newacc
+        self.j = newjerk
 
         # Update next timestep.
+        self.set_collision_time_scale(ps, safety_factor)
+
+        # ...and we're done.
+
+    def init_for_integration(self, ps, safety_factor):
+        """Should be called before any hermite integration steps to
+        initialize the body for integration.  safety_factor is the
+        fraction of the collision timescale used for computing the
+        timestep."""
+
+        self.a,self.j = self.total_acc_and_jerk(ps)
+
+        # In principle, this call involves predicting the state of the
+        # other bodies, but init_for_integration should only be called
+        # at a synchronization point of the system, when all bodies
+        # are at the same t.  So, it is safe to call here, even though
+        # the other bodies may not have their acc and jerk computed
+        # yet.
         self.set_collision_time_scale(ps, safety_factor)

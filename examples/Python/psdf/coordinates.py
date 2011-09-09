@@ -1,4 +1,5 @@
 from particle import *
+import energy
 
 def total_mass(particles):
     return sum([p.m for p in particles])
@@ -7,20 +8,18 @@ def center_of_mass(particles):
     """Returns the center of mass of the given particles."""
     mtot = total_mass(particles)
 
-    com = [0, 0, 0]
+    com = Vector([0,0,0])
     for p in particles:
-        for i in range(3):
-            com[i] += p.r[i]*p.m/mtot
+        com += p.m*p.r/mtot
 
     return com
     
 def total_momentum(particles):
     """Returns the total momentum of the given particles."""
-    ptot = [0, 0, 0]
+    ptot = Vector([0, 0, 0])
 
     for p in particles:
-        for i in range(3):
-            ptot[i] += p.v[i]*p.m
+        ptot += p.v*p.m
 
     return ptot
 
@@ -31,12 +30,9 @@ def to_com_frame(particles):
     com = center_of_mass(particles)
     ptot = total_momentum(particles)
 
-    vtot = [p/mtot for p in ptot]
+    vtot = ptot / mtot
 
-    return [Particle(p.id, p.m, p.t,
-                     [x - c for x,c in zip(p.r, com)],
-                     [v - vt for v,vt in zip(p.v, vtot)]) for
-            p in particles]
+    return [Particle(p.id, p.m, p.t, p.r - com, p.v - vtot) for p in particles]
 
 def to_standard_units(particles):
     """Returns a new array of particles with the same ID's but now in
@@ -61,15 +57,12 @@ def to_standard_units(particles):
     particles = [Particle(p.id, p.m/mtot, p.t, p.r, p.v) for p in particles]
 
     # Now compute total energy
-    ke = sum([p.kinetic_energy() for p in particles])
-    pe = 0.5*sum([sum([p1.potential_energy(p2) for p2 in particles if not p2 == p1]) for p1 in particles])
+    ke = energy.kinetic_energy(particles)
+    pe = energy.potential_energy(particles)
     e = ke + pe
 
     assert e < 0, e
 
     scalefactor = -0.25 / e
 
-    return [Particle(p.id, p.m, p.t,
-                     [x/scalefactor for x in p.r],
-                     [v*math.sqrt(scalefactor) for v in p.v])
-            for p in particles]
+    return [Particle(p.id, p.m, p.t, p.r/scalefactor, p.v*math.sqrt(scalefactor)) for p in particles]

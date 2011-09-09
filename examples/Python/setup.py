@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='psdf',
-      version='1.0',
+      version='1.0dev',
       description='Python utilities for the Particle Stream Data Format',
       author='Will M. Farr',
       author_email='w-farr@northwestern.edu',

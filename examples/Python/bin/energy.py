@@ -7,9 +7,9 @@ import sys
 
 if __name__ == '__main__':
 
-    particles = [p for p in yaml.load_all(sys.stdin)]
+    ps = [p for p in yaml.load_all(sys.stdin)]
 
-    ke = sum([p.kinetic_energy() for p in particles])
-    pe = 0.5*sum([sum([p.potential_energy(p2) for p2 in particles if not p == p2]) for p in particles])
+    ke = energy.kinetic_energy(ps)
+    pe = energy.potential_energy(ps)
 
     print 'Total energy = %g (ke = %g, pe = %g)\n'%(ke+pe, ke, pe)
