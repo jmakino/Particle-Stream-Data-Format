@@ -24,6 +24,10 @@ input_output.py: A simple example that reads a system or set of
 worldlines on stdin in PSDF format, constructs the corresponding
 particle objects, and dumps them on stdout in PSDF format.
 
+integrator.py: A Hermite, individual timestep integrator.  Takes a
+PSDF stream representing an IC on input, and puts a PSDF stream of the
+integration on output.
+
 plummer_model.py: Produces a plummer model in PSDF format on stdout.
 
 system_to_standard_units.py: Reads a system in PSDF format on stdin,

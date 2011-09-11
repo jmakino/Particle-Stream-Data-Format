@@ -10,5 +10,5 @@ setup(name='psdf',
       url='https://github.com/jmakino/Particle-Stream-Data-Format',
       packages=['psdf'],
       scripts=['bin/energy.py', 'bin/input_output.py', 'bin/plummer_model.py',
-               'bin/system_to_standard_units.py'],
+               'bin/system_to_standard_units.py', 'bin/integrator.py'],
       requires=['yaml'])
