@@ -25,6 +25,56 @@ class Particle(yaml.YAMLObject):
         
         self.tnext = self.t
 
+    # We need the following because we don't want to have our custom
+    # Vector object appearing in the output; rather, all Vectors
+    # should become straightforward YAML sequences.
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        """Dump to YAML."""
+        return dumper.represent_mapping(data.yaml_tag,
+                                        {'id': data.id,
+                                         'm': data.m,
+                                         't': data.t,
+                                         'r': list(data.r),
+                                         'v': list(data.v),
+                                         'a': list(data.a),
+                                         'j': list(data.a),
+                                         'tpred': data.tpred,
+                                         'rpred': list(data.rpred),
+                                         'vpred': list(data.vpred),
+                                         't_max': data.tnext})
+
+    # Similarly to to_yaml, we need this routine to convert any
+    # sequences in the input from the default Python lists to the
+    # custom Vector class.
+    @classmethod
+    def from_yaml(cls, loader, node):
+        """Load from YAML."""
+        
+        # Note the 'deep=True' argument.  This is apparently necessary
+        # in order to get PyYAML to recursively convert all the
+        # compound objects in node (i.e. the sequences for 'r:', 'v:',
+        # etc.
+        m = loader.construct_mapping(node, deep=True)
+
+        p = Particle(m['id'], m['m'], m['t'], m['r'], m['v'])
+
+        # The following fields may or may not be present.  If present,
+        # we should also make sure they are vectors; if not present,
+        # we should initialize them.
+        if 'a' in m:
+            p.a = Vector(m['a'])
+        if 'j' in m:
+            p.j = Vector(m['j'])
+        if 'tpred' in m and 'rpred' in m and 'vpred' in m:
+            p.tpred = m['tpred']
+            p.rpred = Vector(m['rpred'])
+            p.vpred = Vector(m['vpred'])
+        if 't_max' in m:
+            p.tnext = m['t_max']
+
+        return p
+
     def __repr__(self):
         return 'Particle(id=%r, m=%r, t=%r, r=%r, v=%r)'%(self.id, self.m, self.t, self.r, self.v)
 
