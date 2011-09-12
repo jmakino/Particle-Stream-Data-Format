@@ -72,9 +72,12 @@ Library
   
   -- Packages needed in order to build this package.
   Build-depends:   base == 4.*             ,
+                   bytestring >= 0.9       ,
+                   data-object      >= 0.3 ,
                    data-object-yaml >= 0.3 ,
+                   ListLike >=3.1,
                    text >= 0.11
-  
+
   -- Modules not exported by this package.
   -- Other-modules:       
   
