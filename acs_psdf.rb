@@ -7,7 +7,6 @@ class Particle
   def initialize
     @id=0
     @t=0
-    @x=[0,1,2]
   end
 end
 
