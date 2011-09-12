@@ -2,6 +2,15 @@
 -- see
 -- http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/authors.html#pkg-descr.
 -- The name of the package.
+
+-- cabal cheatsheet
+--   cabal init    : initialize .cabal
+--   cabal check   : detect format error 
+--   cabal install : install this library
+--   cabal haddock : create haddock documentation
+--   cabal sdist   : create tarball
+--   cabal upload dist/Paraiso-....tar.gz : hackage debut!
+
 Name:                PSDF
 
 -- The package version. See the Haskell package versioning policy
@@ -53,19 +62,23 @@ Build-type:          Simple
 -- Extra-source-files:  
 
 -- Constraint on the version of Cabal needed to build this package.
-Cabal-version:       >=1.2
+Cabal-version:       >=1.10
 
 
 Library
   -- Modules exported by the library.
-  -- Exposed-modules:     
+  Exposed-modules: Data.PSDF
+  
   
   -- Packages needed in order to build this package.
-  -- Build-depends:       
+  Build-depends:   base == 4.*             ,
+                   data-object-yaml >= 0.3 ,
+                   text >= 0.11
   
   -- Modules not exported by this package.
   -- Other-modules:       
   
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
   -- Build-tools:         
-  
+
+  Default-Language: Haskell2010  
