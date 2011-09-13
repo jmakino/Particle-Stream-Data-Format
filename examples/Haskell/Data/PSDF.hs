@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# Options -Wall #-}
 
 module Data.PSDF (
-  PSDF, Body,
+  PSDF, Body(..),
   
   readPSDF, readPSDFFile
   ) where
 
 import           Control.Applicative
-import           Control.Monad
+--import           Control.Monad
 import qualified Data.ByteString      as BS
 import           Data.ListLike ()
 import           Data.ListLike.Text ()
@@ -39,7 +40,7 @@ readPSDFFile = fmap readPSDF . BS.readFile
 readPSDF :: BS.ByteString -> PSDF
 readPSDF str = 
   catMaybes $ 
-  map (>>= parse) $
+  map (>>= parseBody) $
   map (Y.decode) strs
   where
     isHeader = BS.isPrefixOf "---" 
@@ -50,10 +51,8 @@ readPSDF str =
       groupBy cmp $ 
       LL.lines str
 
-
-
-parse :: MyYaml -> Maybe Body
-parse yaml = case yaml of
+parseBody :: MyYaml -> Maybe Body
+parseBody yaml = case yaml of
   Y.Mapping xs -> parseMapping xs
   _            -> Nothing
 
