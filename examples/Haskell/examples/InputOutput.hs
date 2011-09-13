@@ -2,7 +2,7 @@
 {-# Options -Wall #-}
 
 import qualified Data.ByteString as BS
-import           Data.PSDF
+import           Data.PSDF.List
 import           System.Environment
 
 {-

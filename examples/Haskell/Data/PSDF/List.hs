@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# Options -Wall #-}
 
-module Data.PSDF (
+-- | A list-based implementation of PSDF reader and writer.
+
+module Data.PSDF.List (
   PSDF, Body(..),
-  
+
   decodePSDF, decodePSDFFile,
   encodePSDF, encodePSDFFile
   ) where
@@ -89,18 +91,18 @@ parseMapping mapping = Body <$> parse "id" <*> parse "t" <*> parse "m" <*> parse
       fmap (read . LL.toString) $
       (>>= expectScalar) $
       lookup key mapping
-      
+
     parseList :: Read a => MyScalar -> Maybe [a]
     parseList key = 
       fmap (map $ read . LL.toString) $
       (>>= expectList) $
       lookup key mapping
-    
+
     expectScalar :: MyYaml -> Maybe MyScalar
     expectScalar x = case x of
       Y.Scalar ret -> Just ret
       _            -> Nothing
-      
+
     expectList :: MyYaml -> Maybe [MyScalar]
     expectList x = case x of
       Y.Sequence xs -> sequence $ map expectScalar xs
