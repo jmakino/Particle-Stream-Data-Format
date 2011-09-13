@@ -2,8 +2,7 @@
 {-# Options -Wall #-}
 
 import qualified Data.ByteString as BS
-import           Data.PSDF.Tensor
-import           Data.Tensor.TypeLevel
+import           Data.PSDF.List
 import           System.Environment
 
 {-
@@ -18,9 +17,9 @@ main = do
   case argv of
     (inFn: outFn: _) -> do
       psdf <- decodePSDFFile inFn
-      encodePSDFFile outFn (psdf :: PSDF Vec3)     
+      encodePSDFFile outFn psdf      
     _ -> do
       str <- BS.getContents
       let psdf = decodePSDF str
-      BS.putStr $ encodePSDF (psdf :: PSDF Vec3)
+      BS.putStr $ encodePSDF psdf
 

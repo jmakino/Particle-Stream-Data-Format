@@ -67,7 +67,8 @@ Cabal-version:       >=1.10
 
 Library
   -- Modules exported by the library.
-  Exposed-modules: Data.PSDF
+  Exposed-modules: Data.PSDF.List
+                   Data.PSDF.Tensor
   
   
   -- Packages needed in order to build this package.
@@ -77,8 +78,9 @@ Library
                    data-object-yaml   >= 0.3 ,
                    ListLike           >= 3.1 ,
                    listlike-instances >= 0.2 ,
-                   text               >= 0.11
-
+                   numeric-prelude >= 0.2.1  && < 0.3,
+                   text               >= 0.11,
+                   typelevel-tensor   >= 0.1
   -- Modules not exported by this package.
   -- Other-modules:       
   
