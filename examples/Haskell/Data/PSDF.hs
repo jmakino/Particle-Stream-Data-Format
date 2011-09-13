@@ -3,7 +3,7 @@
 module Data.PSDF (
   PSDF, Body,
   
-  readPSDF
+  readPSDF, readPSDFFile
   ) where
 
 import           Control.Applicative
@@ -32,6 +32,9 @@ data Body
       velocity :: [Double]
     }
     deriving (Eq, Show)
+
+readPSDFFile :: FilePath -> IO PSDF
+readPSDFFile = fmap readPSDF . BS.readFile 
 
 readPSDF :: BS.ByteString -> PSDF
 readPSDF str = 
