@@ -6,17 +6,20 @@ import           Data.PSDF
 import           System.Environment
 
 {-
-  given a filename as a command line argument, read from the file
+  given two filenames as command line arguments, 
+  read from the first file and write to second
   if no filename is given, read from standard input
 -}
 
 main :: IO ()
 main = do
   argv <- getArgs
-  if length argv == 0
-    then do
+  case argv of
+    (inFn: outFn: _) -> do
+      psdf <- decodePSDFFile inFn
+      encodePSDFFile outFn psdf      
+    _ -> do
       str <- BS.getContents
-      print $ readPSDF str
-    else do
-      psdf <- readPSDFFile $ head argv
-      print psdf
+      let psdf = decodePSDF str
+      BS.putStr $ encodePSDF psdf
+

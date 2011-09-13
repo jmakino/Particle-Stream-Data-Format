@@ -4,13 +4,13 @@
 module Data.PSDF (
   PSDF, Body(..),
   
-  readPSDF, readPSDFFile
+  decodePSDF, decodePSDFFile,
+  encodePSDF, encodePSDFFile
   ) where
 
 import           Control.Applicative
---import           Control.Monad
 import qualified Data.ByteString      as BS
-import           Data.ListLike ()
+import qualified Data.ListLike        as LL
 import           Data.ListLike.Text ()
 import qualified Data.ListLike.String as LL
 import           Data.List 
@@ -18,6 +18,8 @@ import           Data.Maybe
 import qualified Data.Object          as Y
 import qualified Data.Object.Yaml     as Y
 import qualified Data.Text            as T
+import           Prelude              hiding (id)
+
 
 type MyScalar = T.Text
 type MyMapping = [(MyScalar, Y.Object MyScalar MyScalar)]
@@ -34,11 +36,11 @@ data Body
     }
     deriving (Eq, Show)
 
-readPSDFFile :: FilePath -> IO PSDF
-readPSDFFile = fmap readPSDF . BS.readFile 
+decodePSDFFile :: FilePath -> IO PSDF
+decodePSDFFile = fmap decodePSDF . BS.readFile 
 
-readPSDF :: BS.ByteString -> PSDF
-readPSDF str = 
+decodePSDF :: BS.ByteString -> PSDF
+decodePSDF str = 
   catMaybes $ 
   map (>>= parseBody) $
   map (Y.decode) strs
@@ -50,6 +52,29 @@ readPSDF str =
       filter (not . isHeader . head) $ 
       groupBy cmp $ 
       LL.lines str
+
+encodePSDFFile :: FilePath -> PSDF -> IO ()
+encodePSDFFile fn psdf = BS.writeFile fn $ encodePSDF psdf
+
+encodePSDF :: PSDF -> BS.ByteString
+encodePSDF = LL.unlines . map encodeBody 
+
+encodeBody :: Body -> BS.ByteString
+encodeBody body = 
+  BS.filter (/= 39) $
+  LL.append "--- !Particle\n" $
+  (Y.encode :: MyYaml -> BS.ByteString) $
+  Y.Mapping 
+    [ ("id", encodeScalar $ id body),
+      ("t" , encodeScalar $ time body),
+      ("m" , encodeScalar $ mass body),
+      ("r" , encodeScalar $ position body),
+      ("v" , encodeScalar $ velocity body)
+    ]
+  where
+    encodeScalar :: Show a => a -> MyYaml
+    encodeScalar = Y.Scalar . LL.fromString . show
+
 
 parseBody :: MyYaml -> Maybe Body
 parseBody yaml = case yaml of
