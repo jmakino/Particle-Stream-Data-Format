@@ -41,11 +41,11 @@ process particles = do
   where
     norm v = contract $ \i -> v!i * v!i
 
-    momentum body = compose $ \i-> mass body * velocity body!i
-    moment2 body  = compose $ \i-> compose $ \j -> mass body * velocity body!i * velocity body!j
+    momentum body = compose $ \i-> mass body * (velocity body)!i
+    moment2 body  = compose $ \i-> compose $ \j -> mass body * (velocity body)!i * (velocity body)!j
     
     moment3 body  = compose $ \i-> compose $ \j -> compose $ \k -> 
-      mass body * velocity body!i * velocity body!j * velocity body!k
+      mass body * (velocity body)!i * (velocity body)!j * (velocity body)!k
 
     kineticEnergy body = 0.5 * mass body * norm (velocity body)
     potentialEnergy body1 body2 = 
