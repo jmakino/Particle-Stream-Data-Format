@@ -57,7 +57,7 @@ encodePSDFFile :: FilePath -> PSDF -> IO ()
 encodePSDFFile fn psdf = BS.writeFile fn $ encodePSDF psdf
 
 encodePSDF :: PSDF -> BS.ByteString
-encodePSDF = LL.unlines . map encodeBody 
+encodePSDF = LL.concat . map encodeBody 
 
 encodeBody :: Body -> BS.ByteString
 encodeBody body = 
