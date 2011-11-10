@@ -17,7 +17,7 @@
 
 \title{PSDF: Particle Stream Data Format for N-Body Simulations}
 
-\author[WMF]{Will Farr\corref{cor1}}
+\author[WMF]{Will M. Farr\corref{cor1}}
 \ead{w-farr@northwestern.edu}
 \author[JA]{Jeff Ames}
 \author[PH]{Piet Hut}
@@ -31,32 +31,32 @@
 \cortext[cor1]{Corresponding author}
 
 \address[WMF]{Northwestern University Center for Interdisciplinary
-  Research in Astrophysics, 2145 Sheridan Rd., Evanston IL 60208}
+  Research in Astrophysics, 2145 Sheridan Rd., Evanston IL 60208 USA}
 
 \address[JM]{Interactive Research Center of Science, Graduate
   School of Science and Engineering Tokyo Institute of Technology,
   2--12--1 Ookayama, Meguro, Tokyo 152-8551, Japan}
 
-\address[PH]{Institute
-  for Advanced Study, Princeton, NJ 08540, USA}
+\address[PH]{Institute for Advanced Study, Princeton, NJ 08540, USA}
 
 \begin{abstract}
-  We present a data format for the output of general N-body simulations,
-  allowing the presence of individual time steps.  By specifying a standard,
-  different N-body integrators and different visualization and analysis
-  programs can all share the simulation data, independent of the type of
-  programs used to produce the data.  Our Particle Stream Data Format,
-  PSDF, is specified in YAML, based on the same approach as XML but
-  with a simpler syntax.  Together with a specification of PSDF, we
-  provide background and motivation, as well as specific examples in a
-  variety of computer languages.  We also offer a web site from which
-  these examples can be retrieved, in order to make it easy to augment
-  existing codes in order to give them the option to produce PSDF output.
+  We present a data format for the output of general N-body
+  simulations, allowing the presence of individual time steps.  By
+  specifying a standard, different N-body integrators and different
+  visualization and analysis programs can all share the simulation
+  data, independent of the type of programs used to produce the data.
+  Our Particle Stream Data Format, PSDF, is specified in YAML, based
+  on the same approach as XML but with a simpler syntax.  Together
+  with a specification of PSDF, we provide background and motivation,
+  as well as specific examples in a variety of computer languages.  We
+  also offer a web site from which these examples can be retrieved, in
+  order to make it easy to augment existing codes in order to give
+  them the option to produce PSDF output.
 \end{abstract}
 
 \begin{keyword}
 % keywords here, in the form: keyword \sep keyword
-Stellar dynamics \sep Method: $N$-body simulation
+  Stellar dynamics \sep Method: $N$-body simulation
 % PACS codes here, in the form: \PACS code \sep code
 \end{keyword}
 
@@ -65,19 +65,19 @@ Stellar dynamics \sep Method: $N$-body simulation
 \section{Introduction}
 
 The simplest N-body calculations use a shared time step length for all
-particles.  This implies a rather simple structure of the output.  With
-N particles and k time steps, the output takes on the form of an $N*k$
-matrix of particle data, where the latter typically contain the mass,
-position and velocity of a single particle at a specific time, with
-possible additional information such as higher derivatives of the position
-(such as acceleration, jerk, etc.), the value of the potential at the 
+particles.  This implies a rather simple structure of the output.
+With N particles and k time steps, the output takes on the form of an
+$N*k$ matrix of particle data, where the latter typically contain the
+mass, position and velocity of a single particle at a specific time,
+with possible additional information such as higher derivatives of the
+position (acceleration, jerk, etc.), the value of the potential at the
 position of that particle, and so on.  The output of this matrix can
-be done by ordering in time or by ordering by the identity of particles,
-in which case each world line is output separately.
+be done by ordering in time or by ordering by the identity of
+particles, in which case each world line is output separately.
 
 Some complications may occur when particles are removed, for example
-because they are escaping from the system, or because they represent
-a star that undergoes a destructive supernova leaving no remnant.
+because they are escaping from the system, or because they represent a
+star that undergoes a destructive supernova leaving no remnant.
 However, the basic I/O structure is simple enough that it is easy to
 present these kinds of data in one of the standard data formats, such
 as FITS or HDF, with a brief description of what is what.
@@ -85,10 +85,10 @@ as FITS or HDF, with a brief description of what is what.
 The situation gets vastly more complicated, though, when we allow for
 individual time steps.  Simulations of dense stellar systems, such as
 open and globular star clusters, as well as galactic nuclei, have
-relied on the use of individual time steps very early on, already in
-the 1960s.  The reason is that the presence of close binaries and
-triples in such systems would increase the computer power needed by
-orders of magnitude in case of shared time steps, compared to
+relied on the use of individual time steps very early on, at least
+since the 1960s.  The reason is that the presence of close binaries
+and triples in such systems would increase the computer power needed
+by orders of magnitude in case of shared time steps, compared to
 individual time steps.  In addition, cosmological codes, too, are
 moving toward the use of individual timesteps, given the increasingly
 large discrepancies of intrinsic time scales that come with
@@ -109,50 +109,60 @@ be much better to let the graphics program itself decide how and where
 to extrapolate, given the original data it has received from a
 simulations code.
 
-For example, when we display the dense center of a star cluster,
-the graphics program can then use the full information for the rapidly
+For example, when we display the dense center of a star cluster, the
+graphics program can then use the full information for the rapidly
 moving particles, while interpolating the data for the slower halo
 particles.  Such an approach can easily save orders of magnitude of
 memory storage requirement.  An implementation of this approach was
 made by Steve McMillan (199? -- {\bf Steve, please provide reference
-and a few-line summary}).  However, this implementation was handcrafted
-for a specific code, reflecting the data structure used in that code.
-Clearly, it would be desirable to have a more universal data format
-that would allow different codes to share data in a more transparent
-way.
+  and a few-line summary}).  However, this implementation was
+handcrafted for a specific code, reflecting the data structure used in
+that code.  Clearly, it would be desirable to have a more universal
+data format that would allow different codes to share data in a more
+transparent way.
 
 Other concerns are to make a data format standard machine independent,
-to make allowance for parallel processing, and to avoid serious overhead
-penalties with respect to performance ({\bf Jun, do you want to add a
-few lines here?})
+to make allowance for parallel processing, and to avoid serious
+overhead penalties with respect to performance ({\bf Jun, do you want
+  to add a few lines here?})
+
+In the following sections, we describe a machine-independent,
+algorithm-independent data format for storing the results of a
+simulation of point-mass gravitational dynamics using individual
+timesteps, which we call the ``Particle Stream Data Format,'' or PSDF.
 
 \section{Basic idea}
 
-We need to store the data sufficient to reconstruct the orbits of
-individual particles. Conceptually, what we need is a stream of
-phase-space information of particles, such as:
+We wish to store the evolving state of a gravitating system of $N$
+bodies throughout a simulation with individual timesteps for each
+particle. Conceptually, what we need is a stream of phase-space
+information of particles, updated each time the integration algorithm
+adjusts a particle's phase space information.  One possibility for
+such a stream could be:
 \begin{verbatim}
   particle_id, time, mass, x, y, z, vx, vy, vz, ...
   particle_id, time, mass, x, y, z, vx, vy, vz, ...
   particle_id, time, mass, x, y, z, vx, vy, vz, ...
 \end{verbatim}
-However, the data format must be flexible enough to be able to include
-more information such as
+However, the data format should be flexible enough to be able to
+include more information, if available, such as
 \begin{itemize}
-  \item radius, and other info related to stellar evolution
-  \item merger history
-  \item whatever else one can think of
+\item radius, and other info related to stellar evolution
+\item merger history
+\item fluid properties if a particle is an SPH particle
+\item {\bf other things?}
 \end{itemize}
 
 One way to construct such a flexible data format is to use
-self-describing data format, such as XML or YAML. For simplicity,
-we adopt YAML here.
+self-describing data format, such as XML or YAML. For simplicity, we
+adopt YAML \citep{YAML2011} here; there are libraries for reading and
+writing YAML in many popular programming languages, and the format is
+simple enough to be understood easily by humans, even if they are not
+already familiar with it.
 
 \subsection{Some basics of YAML}
 
-The following is a simple example of a data in YAML format.
-
-
+The following is a simple example of data in YAML format.
 \begin{verbatim}
 --- !Particle
 id: 0
@@ -166,42 +176,37 @@ v:
   - -3
 m: 1.0
 \end{verbatim}
-
 In the above example, the line
-
 \begin{verbatim}
 --- !Particle
 \end{verbatim}
 Is the header, which indicates that it describes the data of an object
-of type {\tt Particle}.
-
-
+of type {\tt Particle}.  The line
 \begin{verbatim}
 id: 0
 \end{verbatim}
-defines a field with name ``id'', and value 0.
+defines a field with name ``id'', and value 0.  The text
 \begin{verbatim}
 r:
   - 0.1
   - 0.2
   - 0.3
 \end{verbatim}
-means the field ``r'' is an array with three elements. The
-first ``-'' means this line is a data for an array.
-By default, numbers without ``.'' are regarded as integers, and with
-``.'' floating point. Note that indentation has meaning here and ``-''
-must be indented the same level or deeper than ``r'' and should be aligned.
-Here,  ``v'' and ``m'' are similar.
-
+means the field ``r'' is an array with three elements. The first ``-''
+means this line is a data for an array.  By default, numbers without
+``.'' are regarded as integers, and with ``.'' floating point. Note
+that indentation has meaning here and ``-'' must be indented the same
+level or deeper than ``r'' and should be aligned.  The ``v'' and ``m''
+fields behave similarly.  The order of the fields is not important;
+the {\tt Particle} object behaves as a \emph{map} from names, like
+``r'', to values, like the array ``\verb|[0.1, 0.2, 0.3]|''.
 
 \section{Particle Stream Data Format}
 
-
-With the  minimal description of YAML in the previous section, now
-we can define the generic data format (not yet for binaries, though):
-The data format is the stream of YAML representation of particle
-object, like
-
+With the minimal description of YAML in the previous section, we can
+now define the Particle Stream Data Format: the data format is a
+stream of YAML representations of particle objects.  For example, a
+valid PSDF fragment is
 \begin{verbatim}
 --- !Particle
 id: 0
@@ -227,19 +232,32 @@ v:
   - 0
   - 0
 m: 1.0
-....
 \end{verbatim}
+This fragment describes two particles, at $t = 0$, with ids 0 and 1.
 
-\subsection{Formalities}
+Particle objects behave in YAML as mappings from names to values.
+Therefore, a specification of the meaning of certain names and a
+procedure for handling unknown names in the stream are sufficient to
+define the data format.  In Table \ref{tab:names} we list the reserved
+names of our PSDF.  Any particular particle in a PSDF stream need not
+include a value in its map for any of these names, but if it does, the
+value must have the meaning in the table; similarly, if a particle
+object in a PSDF stream does contain a value with one of the meanings
+in the table, then it should be identified by the corresponding name.
+Note that these requirements allow for easy extension of a PSDF stream
+with application-specific information by including any names and
+values not in Table \ref{tab:names} needed by the specialized
+application.  Programs that understand this additional information can
+benefit, while those that do not will still be able to function using
+the basic information from any included values of Table
+\ref{tab:names}.  In the future, we intend to provide extensions that
+are useful for hierarchical decomposition of an $N$-body system and
+for description of fluid SPH particles.
 
-For a data format to be understandable by a computer program, there
-need to be some convension. We start with the list of reserved words
-for the names:
-
-\begin{center}
+\begin{table}
 \begin{tabular}{|c|l|}
 \hline
-name & description\\
+Name & Meaning\\
 \hline
 id & index (can be arbitrary text)\\
 m & mass\\
@@ -255,222 +273,152 @@ crackle  & crackle, array with three elements\\
 pop  & pop, array with three elements\\
 \hline
 \end{tabular}
-\end{center}
+\caption{\label{tab:names} The reserved names of the PSDF and their
+  meanings.  Other names occurring in the data stream are to be
+  ignored if they are not meaningful to an application or interpreted
+  in an application-specific way if they are.  A particle object in a
+  PSDF data stream need not contain any of these names, but if it does
+  they must have the meanings above; similarly, if a particle object
+  contains data with the above meanings, it should be identified by
+  the associated standard name.}
+\end{table}
 
 We require that time, position, velocity and higher derivatives are
-consistent (that if position is given in parsec and time in year,
-velocity must be in parsec/year, not km/s, for example). Also, we
-expect the users of this format to follow the convension of using
-these names to descrive these physical quantities. Here, {\tt t\_max}
-is rather special, in that it gives the maximum possible time that
-this record is used to predict the orbit of this particle.
+consistent (for example, if position is given in parsecs and time in
+years, velocity must be in parsec/year).  The name {\tt t\_max} is
+rather special, in that it gives the maximum possible time that this
+record is used to predict the orbit of this particle; we expect that
+this may prove useful to prevent invalid extrapolation in programs
+that process the PSDF.
 
-Any of these fields are not required. One can make a record without
-velocity, mass, time or whatsoever. If a program needs the positions
-of particles but the data file does not give them, the program should
-raise error message. We will give example APIs in several languages in
-the appendix.
+% In the a data file, if the record of one particle is not produced
+% after certain time, the analysis/visualization program regard that it
+% somehow vanished after time {\tt t\_max}.
 
-In the a data file, if the record of one particle is not produced
-after certain time, the analysis/visualization program regard that it
-somehow vanished after time {\tt t\_max}.
+% We considered the possibility of defining a special record for
+% creation and destruction of a particle, but decided against that to
+% keep the parser as simple as possible to write.
 
-We considered the possibility of defining a special record for
-creation and destruction of a particle, but decided against that to
-keep the parser as simple as possible to write.
+A complete PSDF object is a stream of particle objects describing the
+states of individual particles in the system at particular times.
+Such a stream may be consumed as it is produced, as in the case of an
+integrator program whose output is directed to a graphics program that
+displays the result of the integration; or such a stream may we
+written to one or more files to be processed at a later date.  We do
+not impose any particular ordering on the particle records in a PSDF
+stream.  For some applications an ordering in time may be appropriate,
+while for others an ordering in particle id may be better, or even
+more complex orderings; later in this paper we provide references to
+code that can convert between the time and particle-id orderings.
 
-We call this format with basic naming convention PSDF (Particle Stream
-Data Format). If one wants to add his/her own data, one possibility is
-to use a name like ``NBODY6\_predicted\_position''. We do not enforce
-the use of keyword  ``X\_'', but are not against it.
+\section{Rationale}
 
-We call a YAML document which corresponds to a single particle object
-as ``worldpoint'', since it is a point on the worldline associated
-with a particle. 
+Our goal is to describe a data format that is 
+\begin{enumerate}
+\item Space-efficient for storing the data individual-timestep
+  $N$-body simulations.
+\item Simple enough to be human readable and writeable.
+\item Information-rich.  It should allow for post-processing and
+  analysis or even continuation or re-running of a simulation.
+\item Flexible enough to accommodate the special needs of programs
+  that have more complex objects than point-mass particles.
+\item Simple and safe to read and parse within a program.
+\item Composable, so that fragments of the data can be split off for
+  separate analysis and recombined easily.
+\end{enumerate}
+In this section we describe how these design goals led to the
+specification in the last section.
 
+\subsection{Space Efficient and Human-Readable}
 
-\section{Some remarks}
+As outlined in the introduction, it is extremely wasteful to produce a
+complete system snapshot in an $N$-body simulation every time some of
+the bodies update their positions or velocities.  The PSDF format
+allows for the output of only the changed data---the new states of the
+updated particles at the new time---to the stream.  Though the native
+format is text-based, for readability, we have found that common
+compression algorithms such as {\tt gzip} applied to files containing
+PSDF data produce output that is within 10\% of the size of equivalent
+compressed binary data.
 
-\subsection{File format}
-PSDF does not define the on-memory data description. It does not
-define how the individual YAML documents are stored.
+\subsection{Information-Rich and Flexible}
 
-There are variety of ways to store worldpoints in file(s). In one
-extreme, all worldpoints are stored in a single big file, in the order
-defined by the time sequence. In the opposite extreme, one worldpoint is
-stored in one file. We could think of anything in between, such as
-single file for one particle or single file for some period in time.
+The fundamental state of a point-particle can be specified in 8
+numbers: one mass, one time, three position coordinates and three
+velocity coordinates.  However, some auxiliary information about the
+particle's state can be very helpful: accurate prediction of the
+particle's position and velocity---for example, to display its track
+in a visualization---can be facilitated by information about the
+higher derivatives of its position in time.  When available to the
+integration routine, these can be easily provided by our format (see
+Table \ref{tab:names}).  
 
-In order to do some parallel I/O, using multiple files may be more
-natural. We do not yet specify any particular form of parallel access,
-though. We might provide some examples, though.
+Not all particles in many $N$-body simulations are point-masses!  For
+example, simulations may attempt to model stellar evolution, and
+therefore store ``star'' properties like radii and masses, or entropy
+profiles with their particles.  Or, simulations may include fluid
+particles subject to non-gravitational forces for SPH calculations.
+To attempt to standardize names for every possible particle property
+would result in a rigid and cumbersome format; instead, by allowing
+arbitrary application-specific names in PSDF particle mappings that
+can be ignored when not understood we permit complex applications to
+work with application-specific data while ensuring that simple
+applications can make use of the parts of the data they
+understand.
 
+\subsection{Simple, Safe, and Composable}
+
+By using a general format (YAML) in wide use for our PSDF, we ensure
+that there are mature, debugged libraries available for reading and
+writing our format.  However, YAML is simple enough that it can we
+written and modified easily ``by hand'' in a text editor.  The idea of
+streaming updates to individual particle states also meshes nicely
+with the evolution algorithms in most $N$-body integrators, making the
+format easy to write from within such a code.
+
+PSDF objects are descriptions of \emph{data}, not instructions for
+actions for an application.  For example, there is no instruction for
+``adding'' or ``deleting'' a particle from the stream.  Adding such
+instructions would require applications to implement interpreters for
+implementing the instructions in the stream, which raises issues of
+security and language design that would significantly complicate the
+specification.
+
+Finally, PSDF documents are \emph{composable}, meaning that any two
+PSDF streams can be concatenated to form another valid PSDF stream,
+and a single stream can be split into any number of valid sub-streams.
+It is quite simple to write a short script in any number of languages
+that consumes a PSDF stream and produces another recording the history
+of a particular particle in the original stream, for example.  Adding
+header information, or instructions, or any other meta-data to the
+stream defeats this goal by requiring specification of some way to
+split and combine the associated meta-data.
 
 \section{Repository}
 
-
+We have examples of codes that generate and manipulate PSDF streams at 
 \begin{verbatim}
-   git@github.com:jmakino/Particle-Stream-Data-Format.git
+https://github.com/jmakino/Particle-Stream-Data-Format
 \end{verbatim}
+The examples are in various different languages, and include
+\begin{itemize}
+\item Programs to generate initial conditions for $N$-body simulations
+  in PSDF format.
+\item Code and references to several different individual-time-step
+  integrators that can take PSDF input and advance the corresponding
+  system in time, producing PSDF output at each step.
+\item Various post-processing tools that compute useful system
+  properties from PSDF input.
+\item A visualization program that takes PSDF input and produces a 3D
+  representation of the system that can be played forward and
+  backward, zoomed, etc.
+\end{itemize}
+We hope that the examples we provide will make it easy for the
+community to use PSDF in their simulations, and that these users will,
+in turn, contribute their useful programs back to the repository as
+examples for future users.
 
-you can download it by:
-\begin{verbatim}
-  mkdir foo
-  cd foo
-  git clone git://github.com/jmakino/Particle-Stream-Data-Format.git
-\end{verbatim}
-
-To update:
-
-\begin{verbatim}
-  git pull
-\end{verbatim}
-  
-\section{Sample codes}
-Also in the github.
-
-\subsection{Base library}
-psdf.rb:
-\begin{verbatim}
-require 'yaml'
-class Particle
-  def taguri
-    return 'x-private:Particle'
-  end
-end
-YAML.add_private_type('Particle') do |type, val|
-  YAML.object_maker(Particle, val)
-end
-\end{verbatim}
-
-This is current minimal ``library'', which defines particle class and
-``Particle'' tag.
-
-\subsection{Simple program to generate a psdf file}
-
-writetest.rb:
-\begin{verbatim}
-require "psdf.rb"
-class Particle
-  attr_accessor :id, :r   
-  def initialize
-    @id=0
-    @t=0
-    @r=[0,1,2]
-  end
-end
-(0..10).each{|id|
-  obj=Particle.new
-  obj.id =id;
-  obj.x[0]=id*0.1
-  print YAML.dump(obj)
-}
-\end{verbatim}
-
-This one generate 10 worldpoints.
-
-\subsection{Simple program to read a psdf file}
-
-readtest.rb:
-\begin{verbatim}
-require "psdf.rb"
-a = []
-while s = gets("--- ")
-  print s
-  print "\n\nend of one gets\n\n"
-  print s, "\n"
-  obj = YAML.load(s) 
-  a.push obj if obj
-end
-p a
-\end{verbatim}
-
-This one reads in 10 particles and store everything in a single array.
-
-\subsection{An ACS Body method to write a psdf worldpoint}
-
-acs\_psdf.rb:
-\begin{verbatim}
-require "psdf.rb"
-class Particle
-  attr_accessor :id, :r, :v, :a, :p, :j, :m, :t, :dt
-end
-
-class Body
-  def to_psdf
-    obj=Particle.new
-    obj.id = @body_id
-    obj.t  = @time
-    obj.r = Array[*@pos]
-    obj.v = Array[*@vel]
-    obj.a = Array[*@acc]
-    obj.j = Array[*@jerk]
-    obj
-  end
-  def psdf_output
-    print YAML.dump(self.to_psdf)
-  end
-end
-\end{verbatim}
-
-In the ACS Body class, position, velocity and other vector data are of
-class {\tt Vector}, not {\tt Array}. So you need to convert them to
-{\tt Array}.
-
-\subsection{An OpenGL animation program}
-
-The file testplot.rb gives a simple example. It it intended to be a
-skeleton code, with minimal UI and other stuff. It takes an input file
-with name ``testin'', in which a sequence of psdf world points is
-stored (can come from shared-timestep or individual-timestep code).
-
-This program requires ruby-opengl library. To install this (if not
-already installed) try:
-\begin{verbatim}
-  sudo gem install opengl
-\end{verbatim}
-On my machine with CentOS 5.5, it failed with:
-\begin{verbatim}
-sudo gem install ruby-opengl
-Building native extensions.  This could take a while...
-ERROR:  Error installing ruby-opengl:
-        ERROR: Failed to build gem native extension.
-
-/usr/bin/ruby -rubygems /usr/lib/ruby/gems/1.8/gems/rake-0.8.7/bin/rake =
-RUBYARCHDIR=3D/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/lib =
-RUBYLIBDIR=3D/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/lib
-/usr/bin/ruby mkrf_conf.rb
-(in /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1)
-rake
-gcc  -fPIC -g -O2    -Wall -DRUBY_VERSION=3D187  -I/usr/include =
--I/usr/lib/ruby/1.8/x86_64-linux -I/usr/lib/ruby/site_ruby/1.8 -I. -c =
-gl-enums.c
-(in /usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/ext/gl)
-gl-enums.c:6  include :
-../common/common.h:45:21: error: GL/glut.h:=20
-                                              rake aborted!
-Command failed with status (1): [gcc  -fPIC -g -O2    -Wall =
--DRUBY_VERSION=3D...]
-/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/ext/gl/Rakefile:29
-(See full trace by running task with --trace)
-rake aborted!
-Command failed with status (1): [rake...]
-
-(See full trace by running task with --trace)
-
-
-Gem files will remain installed in =
-/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1 for inspection.
-Results logged to =
-/usr/lib/ruby/gems/1.8/gems/ruby-opengl-0.60.1/gem_make.out
-\end{verbatim}
-
-In this case, you need to install GLUT library, by
-\begin{verbatim}
-  sudo yum install freeglut   freeglut-devel
-\end{verbatim}
-
-\section*{Acknowledgment}
+\section*{Acknowledgments}
 
 \bibliographystyle{elsarticle-harv}
 \bibliography{data-format}
