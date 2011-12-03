@@ -50,7 +50,7 @@ display = Proc.new {
   GL.LoadIdentity();
   GLU.LookAt(0.0, 0.0, 5.0, $dx, $dy, 0.0, 0.0, 1.0, 0.0)
   GL.PushMatrix
-  print "time= #{$time}, n=#{$n}, frame=#{$frame}\n"
+#  print "time= #{$time}, n=#{$n}, frame=#{$frame}\n"
   for j in 0..$n-1
     if $pa[j]
       GL.PushMatrix
