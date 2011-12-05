@@ -13,6 +13,12 @@
 \newcommand{\divr}[1]{\nabla_{\bf r} \cdot \textbf{\textit{#1}}}
 \renewcommand{\div}[1]{\nabla \cdot #1}
 
+\newcommand{\fixme}[1]{\textbf{FIXME: #1}}
+
+% Journal Abbreviations
+\newcommand{\aap}{A\&A}
+\newcommand{\mnras}{MNRAS}
+
 \begin{document}
 
 \title{PSDF: Particle Stream Data Format for N-Body Simulations}
@@ -65,7 +71,7 @@
 \section{Introduction}
 
 The simplest N-body calculations use a shared time step length for all
-particles.  This implies a rather simple structure of the output.
+particles.  This implies a straightforward structure of the output.
 With N particles and k time steps, the output takes on the form of an
 $N*k$ matrix of particle data, where the latter typically contain the
 mass, position and velocity of a single particle at a specific time,
@@ -80,19 +86,20 @@ because they are escaping from the system, or because they represent a
 star that undergoes a destructive supernova leaving no remnant.
 However, the basic I/O structure is simple enough that it is easy to
 present these kinds of data in one of the standard data formats, such
-as FITS or HDF, with a brief description of what is what.
+as FITS \citep{Pence2010} or HDF \citep{HDF2011}, with a brief
+description of what is what.
 
 The situation gets vastly more complicated, though, when we allow for
 individual time steps.  Simulations of dense stellar systems, such as
 open and globular star clusters, as well as galactic nuclei, have
 relied on the use of individual time steps very early on, at least
-since the 1960s.  The reason is that the presence of close binaries
-and triples in such systems would increase the computer power needed
-by orders of magnitude in case of shared time steps, compared to
-individual time steps.  In addition, cosmological codes, too, are
-moving toward the use of individual timesteps, given the increasingly
+since the 1960s \citep{Aarseth2009}.  The reason is that the presence
+of close binaries and triples in such systems would increase the
+computer power needed by orders of magnitude in case of shared time
+steps, compared to individual time steps.  In addition, cosmological
+codes, too, often use individual timesteps, given the increasingly
 large discrepancies of intrinsic time scales that come with
-increasingly high spatial resolution.
+increasingly high spatial resolution \citep[e.g.][]{Springel2005}.
 
 The simplest way to output data from individual time step codes would
 be to stick to shared time steps.  Indeed, typical legacy codes, such
@@ -114,8 +121,8 @@ graphics program can then use the full information for the rapidly
 moving particles, while interpolating the data for the slower halo
 particles.  Such an approach can easily save orders of magnitude of
 memory storage requirement.  An implementation of this approach was
-made by Steve McMillan (199? -- {\bf Steve, please provide reference
-  and a few-line summary}).  However, this implementation was
+made by Steve McMillan \fixme{2001?  Steve, please provide reference
+  and a few-line summary}.  However, this implementation was
 handcrafted for a specific code, reflecting the data structure used in
 that code.  Clearly, it would be desirable to have a more universal
 data format that would allow different codes to share data in a more
@@ -123,18 +130,18 @@ transparent way.
 
 Other concerns are to make a data format standard machine independent,
 to make allowance for parallel processing, and to avoid serious
-overhead penalties with respect to performance ({\bf Jun, do you want
-  to add a few lines here?})
+overhead penalties with respect to performance \fixme{Jun, do you want
+  to add a few lines here?}
 
-In the following sections, we describe a machine-independent,
-algorithm-independent data format for storing the results of a
-simulation of point-mass gravitational dynamics using individual
-timesteps, which we call the ``Particle Stream Data Format,'' or PSDF.
+Here we describe a machine-independent, algorithm-independent data
+format for storing the results of a simulation of point-mass
+gravitational dynamics using individual timesteps, which we call the
+``Particle Stream Data Format,'' or PSDF.
 
 \section{Basic idea}
 
-We wish to store the evolving state of a gravitating system of $N$
-bodies throughout a simulation with individual timesteps for each
+We wish to store the evolution of a gravitating system of $N$ bodies
+throughout a simulation with individual timesteps for each
 particle. Conceptually, what we need is a stream of phase-space
 information of particles, updated each time the integration algorithm
 adjusts a particle's phase space information.  One possibility for
@@ -147,13 +154,15 @@ such a stream could be:
 However, the data format should be flexible enough to be able to
 include more information, if available, such as
 \begin{itemize}
+\item hierarchical decompositions of the system into binaries,
+  triples, etc.
 \item radius, and other info related to stellar evolution
 \item merger history
 \item fluid properties if a particle is an SPH particle
-\item {\bf other things?}
+\item \fixme{other things?}
 \end{itemize}
 
-One way to construct such a flexible data format is to use
+One way to construct such a flexible data format is to use a 
 self-describing data format, such as XML or YAML. For simplicity, we
 adopt YAML \citep{YAML2011} here; there are libraries for reading and
 writing YAML in many popular programming languages, and the format is
@@ -197,9 +206,9 @@ means this line is a data for an array.  By default, numbers without
 ``.'' are regarded as integers, and with ``.'' floating point. Note
 that indentation has meaning here and ``-'' must be indented the same
 level or deeper than ``r'' and should be aligned.  The ``v'' and ``m''
-fields behave similarly.  The order of the fields is not important;
-the {\tt Particle} object behaves as a \emph{map} from names, like
-``r'', to values, like the array ``\verb|[0.1, 0.2, 0.3]|''.
+fields behave similarly.  The order of the fields is not important.
+The {\tt Particle} object behaves as a \emph{map} from names, like
+``r'', to values, in the case above the array ``\verb|[0.1, 0.2, 0.3]|''.
 
 \section{Particle Stream Data Format}
 
@@ -251,8 +260,9 @@ application.  Programs that understand this additional information can
 benefit, while those that do not will still be able to function using
 the basic information from any included values of Table
 \ref{tab:names}.  In the future, we intend to provide extensions that
-are useful for hierarchical decomposition of an $N$-body system and
-for description of fluid SPH particles.
+are useful for hierarchical decomposition of an $N$-body system, for
+example one containing tight binaries, triples, and higher multiples,
+and for description of fluid SPH particles.
 
 \begin{table}
 \begin{tabular}{|c|l|}
@@ -273,23 +283,24 @@ crackle  & crackle, array with three elements\\
 pop  & pop, array with three elements\\
 \hline
 \end{tabular}
-\caption{\label{tab:names} The reserved names of the PSDF and their
+\caption{\label{tab:names} The reserved names of PSDF and their
   meanings.  Other names occurring in the data stream are to be
   ignored if they are not meaningful to an application or interpreted
-  in an application-specific way if they are.  A particle object in a
-  PSDF data stream need not contain any of these names, but if it does
-  they must have the meanings above; similarly, if a particle object
-  contains data with the above meanings, it should be identified by
-  the associated standard name.}
+  in an application-specific way if they are.  Here the jerk,
+  snap, cracle, and pop are our names for the third, fourth, fifth,
+  and sixth derivatives of position.  We specify that each vector must
+  contain three elements; in the event of a two-dimensional
+  simulation, one of the vector components should be set to zero.}
 \end{table}
 
 We require that time, position, velocity and higher derivatives are
 consistent (for example, if position is given in parsecs and time in
 years, velocity must be in parsec/year).  The name {\tt t\_max} is
-rather special, in that it gives the maximum possible time that this
-record is used to predict the orbit of this particle; we expect that
-this may prove useful to prevent invalid extrapolation in programs
-that process the PSDF.
+rather special, in that it does not specify part of the state of a
+particle, but rather gives the maximum possible time that this record
+is used to predict the orbit of this particle; we expect that this may
+prove useful to prevent invalid extrapolation in programs that process
+the PSDF.
 
 % In the a data file, if the record of one particle is not produced
 % after certain time, the analysis/visualization program regard that it
@@ -308,28 +319,30 @@ written to one or more files to be processed at a later date.  We do
 not impose any particular ordering on the particle records in a PSDF
 stream.  For some applications an ordering in time may be appropriate,
 while for others an ordering in particle id may be better, or even
-more complex orderings; later in this paper we provide references to
-code that can convert between the time and particle-id orderings.
+more complex orderings; in Section \ref{sec:repository} we provide
+references to code that can convert between the time and particle-id
+orderings.
 
 \section{Rationale}
 
 Our goal is to describe a data format that is 
 \begin{enumerate}
-\item Space-efficient for storing the data individual-timestep
+\item Space-efficient for storing the data from individual-timestep
   $N$-body simulations.
-\item Simple enough to be human readable and writeable.
-\item Information-rich.  It should allow for post-processing and
-  analysis or even continuation or re-running of a simulation.
+\item Simple enough to be human readable and writeable, and safe for
+  programs to read, even from un-trusted sources.
+\item Information-rich to allow for post-processing and analysis or
+  even provide enough additional information for continuation or
+  re-running of a simulation.
 \item Flexible enough to accommodate the special needs of programs
   that have more complex objects than point-mass particles.
-\item Simple and safe to read and parse within a program.
 \item Composable, so that fragments of the data can be split off for
   separate analysis and recombined easily.
 \end{enumerate}
 In this section we describe how these design goals led to the
-specification in the last section.
+specification in the previous section.
 
-\subsection{Space Efficient and Human-Readable}
+\subsection{Space Efficient}
 
 As outlined in the introduction, it is extremely wasteful to produce a
 complete system snapshot in an $N$-body simulation every time some of
@@ -341,7 +354,27 @@ compression algorithms such as {\tt gzip} applied to files containing
 PSDF data produce output that is within 10\% of the size of equivalent
 compressed binary data.
 
-\subsection{Information-Rich and Flexible}
+\subsection{Simple and Human-Readable}
+
+By using a general format (YAML) in wide use for our PSDF, we ensure
+that there are mature, debugged libraries available for reading and
+writing our format \citep{YAML2011}.  However, YAML is simple enough
+that it can we written and modified easily ``by hand'' in a text
+editor using only ASCII characters.  The idea of streaming updates to
+individual particle states also meshes nicely with the evolution
+algorithms in most $N$-body integrators, making the format easy to
+write from within such a code.
+
+PSDF objects are descriptions of \emph{data}, not instructions for
+actions for an application.  In other words PSDF does not contain any
+hidden ``language'' structures.  For example, there is no instruction
+for ``adding'' or ``deleting'' a particle from the stream.  Adding
+such instructions would require applications to implement interpreters
+for implementing the instructions in the stream, which raises issues
+of security and language design that would significantly complicate
+the specification.
+
+\subsection{Information-Rich}
 
 The fundamental state of a point-particle can be specified in 8
 numbers: one mass, one time, three position coordinates and three
@@ -353,6 +386,8 @@ higher derivatives of its position in time.  When available to the
 integration routine, these can be easily provided by our format (see
 Table \ref{tab:names}).  
 
+\subsection{Flexible}
+
 Not all particles in many $N$-body simulations are point-masses!  For
 example, simulations may attempt to model stellar evolution, and
 therefore store ``star'' properties like radii and masses, or entropy
@@ -363,38 +398,25 @@ would result in a rigid and cumbersome format; instead, by allowing
 arbitrary application-specific names in PSDF particle mappings that
 can be ignored when not understood we permit complex applications to
 work with application-specific data while ensuring that simple
-applications can make use of the parts of the data they
-understand.
+applications can make use of the parts of the data they understand.
 
 \subsection{Simple, Safe, and Composable}
 
-By using a general format (YAML) in wide use for our PSDF, we ensure
-that there are mature, debugged libraries available for reading and
-writing our format.  However, YAML is simple enough that it can we
-written and modified easily ``by hand'' in a text editor.  The idea of
-streaming updates to individual particle states also meshes nicely
-with the evolution algorithms in most $N$-body integrators, making the
-format easy to write from within such a code.
-
-PSDF objects are descriptions of \emph{data}, not instructions for
-actions for an application.  For example, there is no instruction for
-``adding'' or ``deleting'' a particle from the stream.  Adding such
-instructions would require applications to implement interpreters for
-implementing the instructions in the stream, which raises issues of
-security and language design that would significantly complicate the
-specification.
-
-Finally, PSDF documents are \emph{composable}, meaning that any two
-PSDF streams can be concatenated to form another valid PSDF stream,
-and a single stream can be split into any number of valid sub-streams.
-It is quite simple to write a short script in any number of languages
-that consumes a PSDF stream and produces another recording the history
-of a particular particle in the original stream, for example.  Adding
-header information, or instructions, or any other meta-data to the
-stream defeats this goal by requiring specification of some way to
-split and combine the associated meta-data.
+PSDF documents are \emph{composable}, meaning that any two PSDF
+streams can be concatenated to form another valid PSDF stream, and a
+single stream can be split into a number of valid sub-streams.  It is
+quite simple to write a short script in any number of languages that
+consumes a PSDF stream and produces another recording the history of a
+particular particle in the original stream, for example.  Another
+example useful in practice is ``thinning'' a stream by including only
+every $n$th particle update, when the interpolation requirements of
+the consuming application are looser than those of the producing
+application.  Adding header information, or instructions, or any other
+meta-data to the stream defeats this goal by requiring specification
+of some way to split and combine the associated meta-data.
 
 \section{Repository}
+\label{sec:repository}
 
 We have examples of codes that generate and manipulate PSDF streams at 
 \begin{verbatim}
