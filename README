@@ -1,9 +1,9 @@
 This repository contains a document describing the proposed Particle
 Stream Data Format (PSDF) for N-Body simulations and associated code
-in several different programming languages demonstrating the use of
-PSDF.  PSDF is optimized for recording the output of general N-Body
-simulations that exploit individual timesteps, and is based on the
-well-known YAML (http://yaml.org) format for representing data.  
+in several different programming languages.  PSDF is optimized for
+recording the output of general N-Body simulations that exploit
+individual timesteps, and is based on the well-known YAML
+(http://yaml.org) format for representing data.
 
 * The "data-format" directory contains a paper and LaTeX sources
   describing PSDF.
