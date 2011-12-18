@@ -1,0 +1,39 @@
+= readme for PSDF fortran interface
+
+Author: Jun Makino
+
+= Overview
+
+This is very simple fortran interface, or wrapper function of Will
+Farr's C implementation. It assumes that data I/O is through
+stdin/stdout of C. So it might cause strange trouble when used with
+fortran unit 5/6 standard IO.
+
+
+= Initialize and Finalize
+
+      function integer init_psdf_parser
+
+returns 0 if success
+
+      function integer final_psdf_parser
+
+currently a dummy function, which does nothing
+
+= read and write
+
+      function read_body(id, t, m, r, v)
+      intger id
+      real*8 t, m, r(3), v(3)
+
+reads one particle, and returns 0 if success
+
+      function write_body(id, t, m, r, v)
+      intger id
+      real*8 t, m, r(3), v(3)
+
+writes one particle, and returns 0 if success
+
+= Things 
+      
+   

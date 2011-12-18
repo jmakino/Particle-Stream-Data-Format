@@ -2,14 +2,15 @@
 YAMLINCDIR = /usr/local/include
 YAMLLIBDIR = /usr/local/lib
 
-CFLAGS = -I$(YAMLINCDIR)
+CFLAGS = -I$(YAMLINCDIR) -I../C
 LDFLAGS = -L$(YAMLLIBDIR) -lyaml
 
-OBJS = psdf-body.o
+OBJS = psdf-body-fint.o psdf-ftest.o ../C/psdf-body.o
 
-input_output: $(OBJS)
+psdf-ftest: $(OBJS)
+	f77 -o psdf-ftest $(OBJS) $(LDFLAGS)
 
 .PHONY: clean
 clean:
 	rm *.o
-	rm input_output
+	rm ftest
