@@ -15,6 +15,9 @@ individual timesteps, and is based on the well-known YAML
   - The C example in "examples/C" demonstrating how to use libyaml to
     parse PSDF into your favorite body structure.
 
+  - The Fortran example in "examples/Fortran" demonstrating how to use
+    the C library to read and write PSDF from Fortran.
+
   - The Python examples in "examples/Python", which contain several
     routines to generate initial conditions for point-mass simulations
     in PSDF format, various post-processing tools, and a complete
