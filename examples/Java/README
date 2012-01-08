@@ -1,0 +1,5 @@
+This is an example of parsing and exporting the PSDF data format in
+Java, using the SnakeYAML library.  To run it:
+
+ant compile test
+./test.sh

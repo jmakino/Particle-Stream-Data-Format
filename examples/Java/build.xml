@@ -1,0 +1,44 @@
+<project name="PSDF" default="dist" basedir=".">
+  <description>
+    PSDF library
+  </description>
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+  <property name="lib" location="lib"/>
+  <property name="testsrc" location="test"/>
+  <property name="testbuild" location="build/test"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build}"/>
+    <mkdir dir="${testbuild}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath>
+        <pathelement location="${lib}/snakeyaml-1.9.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="test" depends="init,compile">
+    <javac srcdir="${testsrc}" destdir="${testbuild}">
+      <classpath>
+        <pathelement location="${build}"/>
+        <pathelement location="${lib}/snakeyaml-1.9.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile">
+    <mkdir dir="${dist}/lib"/>
+    <jar jarfile="${dist}/lib/PSDF.jar" basedir="${build}"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
