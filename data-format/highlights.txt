@@ -1,0 +1,8 @@
+* We present a data format for the output of individual-timestep
+  N-body simulations.
+
+* The data format is based on YAML, a generic human-friendly data
+  serialization format.
+
+* We give links to sofware libraries in various languages that can
+  process the format.
