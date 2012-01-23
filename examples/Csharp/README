@@ -1,0 +1,2 @@
+This is a C# example for PSDF code; it uses yamldotnet-1.1.11 (or
+greater), and is meant to be built with NAnt.

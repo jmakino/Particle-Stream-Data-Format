@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project name="PSDF" default="build" basedir=".">
+  <description>Particle Stream Data Format</description>
+  <property name="debug" value="true" overwrite="false" />
+  <property name="build.dir" value="bin" />
+  <target name="init">
+    <mkdir dir="${build.dir}" />
+  </target>
+  <target name="clean" description="Remove all generated files">
+    <delete dir="${build.dir}" failonerror="false" />
+    <delete>
+      <fileset basedir="${build.dir}">
+        <include name="*.*" />
+      </fileset>
+    </delete>
+  </target>
+  <target name="build" description="compiles the source code" depends="init">
+    <csc target="library" output="${build.dir}/PSDF.dll" debug="${debug}">
+      <sources>
+        <include name="src/*.cs" />
+      </sources>
+      <references basedir="lib">
+        <include name="YamlDotNet.Converters.dll" />
+        <include name="YamlDotNet.Core.dll" />
+        <include name="YamlDotNet.RepresentationModel.dll" />
+      </references>
+    </csc>
+    <csc target="exe" output="${build.dir}/PSDFTest.exe" debug="${debug}">
+      <sources>
+        <include name="src/PSDFTest.cs" />
+      </sources>
+      <references basedir="${build.dir}">
+        <include name="PSDF.dll" />
+      </references>
+    </csc>
+    <copy todir="${build.dir}">
+      <fileset basedir=".">
+        <include name="test.psdf" />
+      </fileset>
+    </copy>
+    <copy todir="${build.dir}">
+      <fileset basedir="lib">
+        <include name="*.dll" />
+      </fileset>
+    </copy>
+  </target>
+</project>

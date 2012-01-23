@@ -15,8 +15,17 @@ individual timesteps, and is based on the well-known YAML
   - The C example in "examples/C" demonstrating how to use libyaml to
     parse PSDF into your favorite body structure.
 
+  - The C# example in "examples/Csharp" demonstrates how to use
+    yamldotnet and C# to read and write PSDF files.
+
   - The Fortran example in "examples/Fortran" demonstrating how to use
     the C library to read and write PSDF from Fortran.
+
+  - The Haskell example in "examples/Haskell" demonstrates how to read
+    and write PSDF files using Haskell.
+
+  - The Java example in "examples/Java" shows how to use SnakeYAML and
+    Java to read and write PSDF files.
 
   - The Python examples in "examples/Python", which contain several
     routines to generate initial conditions for point-mass simulations
@@ -27,7 +36,3 @@ individual timesteps, and is based on the well-known YAML
   - The Ruby examples in "examples/ruby", which contain a PSDF-based
     Open GL viewer, "testplot.rb" that consumes a PSDF stream and
     displays a movie of the corresponding N-Body system.
-
-  - The Haskell example in "examples/Haskell", which contains code
-    that demonstrates using a user-defined tensor coordinate strucutre
-    with PSDF I/O.
